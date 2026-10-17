@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harbour Acoustic Watch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-level="0">
+<header class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 20c3 0 3-2 6.5-2s3.5 2 6.5 2 3-2 6.5-2 3.5 2 6.5 2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M3 26c3 0 3-2 6.5-2s3.5 2 6.5 2 3-2 6.5-2 3.5 2 6.5 2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".5"/><circle cx="16" cy="9" r="3.2" fill="currentColor"/><path d="M16 12v6" stroke="currentColor" stroke-width="2.2"/></svg>
+    <div>
+      <h1>Harbour Acoustic Watch</h1>
+      <p class="feed" id="feedLine">No feed. Choose a recording below to replay it as a live hydrophone feed.</p>
+    </div>
+  </div>
+  <div class="top-right">
+    <span class="source-tag" id="sourceTag" hidden></span>
+    <div class="clock"><span class="clock-label">Feed time</span><span id="feedClock" class="num">00:00</span></div>
+    <nav class="views" aria-label="View">
+      <button class="view-btn" data-view="officer" aria-pressed="true">Officer</button>
+      <button class="view-btn" data-view="analyst" aria-pressed="false">Analyst</button>
+    </nav>
+  </div>
+</header>
+
+<div class="banner" id="banner" hidden></div>
+
+<!-- ============================== OFFICER VIEW ============================== -->
+<main id="view-officer" class="view officer">
+  <section class="threat" aria-live="polite" aria-label="Threat level">
+    <p class="threat-caption">Threat level</p>
+    <p class="threat-word" id="threatWord">STANDBY</p>
+    <ol class="ladder" id="ladder">
+      <li data-l="3">Alert</li>
+      <li data-l="2">Elevated</li>
+      <li data-l="1">Watch</li>
+      <li data-l="0">Normal</li>
+    </ol>
+    <p class="threat-summary" id="threatSummary">Start a replay to begin monitoring.</p>
+    <div class="persist" id="persistBox">
+      <div class="persist-head"><span>Build-up to alert</span><span id="persistText" class="num">–</span></div>
+      <div class="persist-track"><div class="persist-fill" id="persistFill"></div></div>
+    </div>
+    <dl class="readout">
+      <div><dt>Anomaly score</dt><dd id="scoreNow" class="num">–</dd></div>
+      <div><dt>Alert threshold</dt><dd id="thrNow" class="num">–</dd></div>
+      <div><dt>Unusual energy</dt><dd id="bandNow" class="num">–</dd></div>
+    </dl>
+    <p class="detector-line">Detector: <strong id="detectorName">Spectrogram</strong></p>
+  </section>
+
+  <section class="map-panel" aria-label="Harbour picture">
+    <div class="panel-head">
+      <h2>Harbour picture</h2>
+      <span class="hint" id="mapHint">Port of Los Angeles, Terminal Island basin. Hydrophones glow when they hear unusual sound.</span>
+    </div>
+    <svg id="mapSvg" role="img" aria-label="Harbour map with hydrophones, vessels, estimated source and inspection boat"></svg>
+    <p class="hint map-legend">
+      <span class="lg lg-hyd"></span>Hydrophone
+      <span class="lg lg-ais"></span>Vessel (AIS)
+      <span class="lg lg-loc"></span>Estimated source, 95% area
+      <span class="lg lg-boat"></span>Inspection boat
+      <span class="lg lg-truth" id="truthLegend" hidden></span><span id="truthLegendText" hidden>True source (simulation, analyst only)</span>
+    </p>
+  </section>
+
+  <section class="picture" aria-label="Live acoustic picture">
+    <div class="pic-pane">
+      <div class="panel-head">
+        <h2>Sound frequencies over time</h2>
+        <span class="hint">Brighter = louder</span>
+      </div>
+      <div class="spec-wrap">
+        <div class="freq-axis" id="freqAxis"></div>
+        <div class="canvas-box"><canvas id="specCanvas"></canvas></div>
+      </div>
+    </div>
+    <div class="pic-pane">
+      <div class="panel-head">
+        <h2>Anomaly score</h2>
+        <span class="hint"><span class="key key-score"></span>score <span class="key key-thr"></span>threshold <span class="key key-event"></span>alert</span>
+      </div>
+      <div class="canvas-box"><canvas id="scoreCanvas"></canvas></div>
+    </div>
+  </section>
+
+  <div class="side">
+    <section class="alert-card" id="alertCard" aria-label="Current alert">
+      <div class="empty" id="alertEmpty">
+        <h2>No active alert</h2>
+        <p>An alert appears here when an unusual sound persists past the threshold for the set time.</p>
+      </div>
+      <div class="alert-body" id="alertBody" hidden>
+        <div class="alert-top">
+          <span class="alert-id num" id="alertId"></span>
+          <span class="alert-status" id="alertStatus"></span>
+        </div>
+        <h2 id="alertTitle">Unusual acoustic event</h2>
+        <p class="alert-sub">Possible intrusion. Not confirmed: verify before escalating.</p>
+        <dl class="alert-facts">
+          <div><dt>Started</dt><dd id="aStart" class="num"></dd></div>
+          <div><dt>Alert raised</dt><dd id="aRaised" class="num"></dd></div>
+          <div><dt>Duration</dt><dd id="aDur" class="num"></dd></div>
+          <div><dt>Peak score</dt><dd id="aPeak" class="num"></dd></div>
+          <div class="wide"><dt>Strongest unusual energy</dt><dd id="aBand" class="num"></dd></div>
+          <div class="wide"><dt>Estimated location</dt><dd id="aLoc"></dd></div>
+          <div class="wide"><dt>Vessel tracking (AIS)</dt><dd id="aAis"></dd></div>
+        </dl>
+        <div class="alert-actions">
+          <button class="btn primary" id="aPlay">Play clip</button>
+          <button class="btn" id="aAck">Acknowledge</button>
+        </div>
+        <audio id="clipAudio" controls preload="none" hidden></audio>
+      </div>
+    </section>
+
+    <section class="boat-card" id="boatCard" aria-label="Inspection boat">
+      <div class="panel-head">
+        <h2>Inspection boat</h2>
+        <span class="sim-flag">Simulated</span>
+      </div>
+      <p class="boat-state" id="boatState">Docked, ready</p>
+      <p class="boat-detail" id="boatDetail">Start a replay of an array recording to enable dispatch.</p>
+      <div class="countdown" id="countdownBox" hidden>
+        <span>Launching in <strong id="countdownNum" class="num">15</strong> s</span>
+        <div class="cd-actions">
+          <button class="btn danger" id="cancelLaunch">Cancel launch</button>
+          <button class="btn" id="launchNow">Launch now</button>
+        </div>
+      </div>
+      <ul class="check-list" id="checkList" hidden></ul>
+      <div class="contact" id="contactBox" hidden></div>
+      <div class="verdicts" id="verdictBox" hidden>
+        <p class="verdict-q">What did the inspection find?</p>
+        <div class="verdict-actions">
+          <button class="btn danger" data-verdict="confirmed intrusion">Confirmed intrusion</button>
+          <button class="btn" data-verdict="false alarm: known activity">False alarm</button>
+          <button class="btn" data-verdict="nothing found">Nothing found</button>
+        </div>
+      </div>
+      <div class="boat-actions">
+        <button class="btn primary" id="dispatchBtn" disabled>Dispatch boat</button>
+        <button class="btn" id="recallBtn" hidden>Recall boat</button>
+      </div>
+      <div class="boat-policy">
+        <label class="switch"><input type="checkbox" id="autoDispatch" checked> Auto-dispatch</label>
+        <label class="inline">Cancel window
+          <select id="cancelSel"><option value="0">none</option><option value="10">10 s</option><option value="15" selected>15 s</option><option value="30">30 s</option></select>
+        </label>
+      </div>
+    </section>
+
+    <section class="log" aria-label="Event log">
+      <div class="panel-head"><h2>Event log</h2><span class="hint" id="logCount">0 events</span></div>
+      <div class="table-wrap">
+        <table class="events">
+          <thead><tr><th>ID</th><th>Raised</th><th>Dur.</th><th>Peak</th><th>Band</th><th>Status</th><th></th></tr></thead>
+          <tbody id="eventRows"><tr class="placeholder"><td colspan="7">No events yet.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="controls" aria-label="Replay and detector controls">
+    <label class="ctrl ctrl-rec">Recording
+      <select id="recSelect"></select>
+    </label>
+    <div class="transport">
+      <button class="btn primary" id="startBtn">Start live replay</button>
+      <button class="btn" id="pauseBtn" disabled>Pause</button>
+      <label class="inline">Speed
+        <select id="speedSel"><option value="1">1×</option><option value="2">2×</option><option value="4" selected>4×</option><option value="8">8×</option></select>
+      </label>
+    </div>
+    <audio id="feedAudio" controls preload="auto"></audio>
+    <div class="ctrl-break" aria-hidden="true"></div>
+    <label class="ctrl ctrl-slider" title="Higher catches fainter sounds but raises more false alerts.">
+      <span>Sensitivity <output id="sensOut" class="num">50</output> <span class="muted">(<span id="sensRate" class="num">1%</span> over on normal)</span></span>
+      <input type="range" id="sensRange" min="0" max="100" step="5" value="50">
+    </label>
+    <label class="ctrl ctrl-slider" title="How long a sound must stay unusual before an alert is raised. Longer means fewer false alerts but slower warnings.">
+      <span>Must persist for <output id="persOut" class="num">4.0 s</output></span>
+      <input type="range" id="persRange" min="0" max="12" step="0.5" value="4">
+    </label>
+    <label class="ctrl ctrl-method" title="Both methods run on every window. This picks which one drives the officer alerts.">Method
+      <select id="methodSel">
+        <option value="spectrogram">Spectrogram</option>
+        <option value="emd">EMD</option>
+      </select>
+    </label>
+  </section>
+</main>
+
+<!-- ============================== ANALYST VIEW ============================== -->
+<main id="view-analyst" class="view analyst" hidden>
+  <section class="a-panel">
+    <div class="panel-head"><h2>Live comparison</h2><span class="hint">Both methods on the current replay</span></div>
+    <canvas id="compareCanvas" height="200"></canvas>
+    <p class="hint legend-line"><span class="key key-spec"></span>Spectrogram score <span class="key key-emd"></span>EMD score (each shown relative to its own threshold, 1.0 = threshold) <span class="key key-truth"></span>Labelled event (used for scoring only, never by the detector)</p>
+    <div class="two-col">
+      <div><h3>Spectrogram alerts</h3><ul class="mini-events" id="cmpSpec"><li class="muted">None yet</li></ul></div>
+      <div><h3>EMD alerts</h3><ul class="mini-events" id="cmpEmd"><li class="muted">None yet</li></ul></div>
+    </div>
+    <p class="hint" id="liveSpeed"></p>
+    <label class="switch"><input type="checkbox" id="showTruth"> Show true source positions on the officer map (simulation only, for checking location accuracy)</label>
+  </section>
+
+  <section class="a-panel">
+    <div class="panel-head"><h2>Inspection log</h2><span class="hint">Officer verdicts. In deployment these become new labelled data.</span></div>
+    <p class="explain">Verdicts are logged, not added to training automatically. A replayed test recording must stay out of training, or the evaluation would be contaminated. In service, verified "normal" outcomes would become new training sessions and confirmed intrusions would become labelled test events.</p>
+    <div class="table-wrap"><table><thead><tr><th>Logged</th><th>Recording</th><th>Event</th><th>Verdict</th><th>Sonar contact</th></tr></thead><tbody id="inspRows"><tr class="placeholder"><td colspan="5">No inspections yet.</td></tr></tbody></table></div>
+  </section>
+
+  <section class="a-panel">
+    <div class="panel-head"><h2>Evaluation</h2><span class="hint">Same sessions, threshold rules and alert logic for both methods</span></div>
+    <div class="eval-actions">
+      <button class="btn primary" id="evalBtn">Run evaluation with current settings</button>
+      <span class="hint" id="evalStatus"></span>
+    </div>
+    <div id="reportBox"><p class="muted">No evaluation yet.</p></div>
+  </section>
+
+  <section class="a-panel">
+    <div class="panel-head"><h2>Recordings and model</h2><span class="hint" id="modelLine"></span></div>
+    <p class="explain">Each session (for example one day of recording) stays in a single role. <strong>Train</strong>: normal port activity the model learns from. <strong>Calibration</strong>: separate normal sessions used only to set alert thresholds. <strong>Test</strong>: held-out recordings for replay and evaluation, with optional labelled events used only for scoring.</p>
+    <div id="sessionErrors" class="error-box" hidden></div>
+    <div class="table-wrap">
+      <table class="lib">
+        <thead><tr><th>Recording</th><th>Session</th><th>Role</th><th>Source</th><th>Length</th><th>Labelled events</th><th></th></tr></thead>
+        <tbody id="libRows"></tbody>
+      </table>
+    </div>
+    <div class="train-row">
+      <button class="btn primary" id="trainBtn">Retrain baseline</button>
+      <span class="hint" id="trainStatus"></span>
+    </div>
+    <form id="uploadForm" class="upload">
+      <h3>Add recordings</h3>
+      <div class="upload-grid">
+        <label>WAV files<input type="file" id="upFiles" accept=".wav,audio/wav" multiple required></label>
+        <label>Session name<input type="text" id="upSession" placeholder="e.g. berth4-2026-10-12" required></label>
+        <label>Role
+          <select id="upRole"><option value="train">Train (normal activity)</option><option value="calibration">Calibration (normal activity)</option><option value="test">Test</option></select>
+        </label>
+        <label class="wide">Labelled events (test only, optional)<textarea id="upLabels" rows="2" placeholder="start_s,end_s,label  one per line, e.g. 62,118,controlled UUV run"></textarea></label>
+      </div>
+      <button class="btn" type="submit">Upload</button>
+      <span class="hint" id="upStatus"></span>
+    </form>
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

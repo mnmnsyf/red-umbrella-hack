@@ -1,0 +1,1491 @@
+{
+  "generated": "2026-10-17 14:31:19",
+  "settings": {
+    "sensitivity": 50,
+    "persistence_s": 4.0,
+    "grace_s": 10.0,
+    "window_s": 1.0,
+    "hop_s": 0.5
+  },
+  "model": {
+    "train_sessions": [
+      "sim-train-01",
+      "sim-train-02",
+      "sim-train-03",
+      "sim-train-04",
+      "sim-train-05",
+      "sim-train-06",
+      "sim-train-07",
+      "sim-train-08",
+      "sim-train-09",
+      "sim-train-10",
+      "sim-train-11",
+      "sim-train-12"
+    ],
+    "calibration_sessions": [
+      "sim-cal-01",
+      "sim-cal-02",
+      "sim-cal-03",
+      "sim-cal-04"
+    ],
+    "data_source": [
+      "simulated"
+    ],
+    "methods": {
+      "spectrogram": {
+        "train_windows": 3588,
+        "calibration_windows": 7176,
+        "array_calibrated": true,
+        "pca_dims": 45,
+        "gmm_components": 3,
+        "fit_seconds": 0.38
+      },
+      "emd": {
+        "train_windows": 3588,
+        "calibration_windows": 7176,
+        "array_calibrated": true,
+        "pca_dims": 26,
+        "gmm_components": 8,
+        "fit_seconds": 0.25
+      }
+    },
+    "created": 1792272534.0996501
+  },
+  "speed": {
+    "spectrogram": {
+      "ms_per_window": 0.92,
+      "x_realtime": 544.0,
+      "note": "per hydrophone per 1 s window (one window every 0.5 s); x real time is per hydrophone"
+    },
+    "emd": {
+      "ms_per_window": 18.51,
+      "x_realtime": 27.0,
+      "note": "per hydrophone per 1 s window (one window every 0.5 s); x real time is per hydrophone"
+    }
+  },
+  "by_source": {
+    "simulated": {
+      "sessions": [
+        "sim-test-normal-01",
+        "sim-test-normal-02",
+        "sim-test-normal-03",
+        "sim-test-normal-04",
+        "sim-test-normal-05",
+        "sim-test-normal-06",
+        "sim-test-event-01",
+        "sim-test-event-02",
+        "sim-test-event-03",
+        "sim-test-event-04",
+        "sim-test-event-05",
+        "sim-test-event-06",
+        "sim-test-event-07",
+        "sim-test-event-08"
+      ],
+      "hours": 0.633,
+      "has_labelled_events": true,
+      "methods": {
+        "spectrogram": {
+          "threshold": 7.796,
+          "persistence_s": 4.0,
+          "false_alerts": 2,
+          "normal_hours": 0.443,
+          "false_alerts_per_hour": 4.51,
+          "false_alerts_per_hour_ci95": [
+            0.55,
+            16.31
+          ],
+          "normal_only_sessions": {
+            "false_alerts": 1,
+            "hours": 0.3,
+            "false_alerts_per_hour": 3.33
+          },
+          "labelled_events": 11,
+          "detected": 7,
+          "detection_rate": 0.636,
+          "time_to_alert_median_s": 3.0,
+          "time_to_alert_mean_s": 12.29,
+          "per_event": [
+            {
+              "start": 40.0,
+              "end": 100.0,
+              "label": "simulated uuv",
+              "snr_db": 12,
+              "track": [
+                [
+                  40,
+                  347.09096473426337,
+                  1159.6222900880343
+                ],
+                [
+                  117.99999999999996,
+                  404.8,
+                  1298.5
+                ]
+              ],
+              "detected": true,
+              "time_to_alert": 1.5,
+              "session": "sim-test-event-01"
+            },
+            {
+              "start": 25.0,
+              "end": 70.0,
+              "label": "simulated uuv",
+              "snr_db": 6,
+              "track": [
+                [
+                  25,
+                  872.6707444830573,
+                  1435.9329045984796
+                ],
+                [
+                  83.49999999999999,
+                  766.8,
+                  1415.6
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-02"
+            },
+            {
+              "start": 95.0,
+              "end": 135.0,
+              "label": "simulated diver",
+              "snr_db": 9,
+              "track": [
+                [
+                  95,
+                  1676.53300383635,
+                  1596.341778057342
+                ],
+                [
+                  353.8772693665674,
+                  1533.3,
+                  1649.9
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-02"
+            },
+            {
+              "start": 50.0,
+              "end": 120.0,
+              "label": "simulated uuv",
+              "snr_db": 3,
+              "track": [
+                [
+                  50,
+                  1464.7757084713314,
+                  1540.9238400160475
+                ],
+                [
+                  140.99999999999997,
+                  1533.3,
+                  1649.9
+                ]
+              ],
+              "detected": true,
+              "time_to_alert": 3.0,
+              "session": "sim-test-event-03"
+            },
+            {
+              "start": 40.0,
+              "end": 100.0,
+              "label": "simulated diver",
+              "snr_db": 6,
+              "track": [
+                [
+                  40,
+                  1248.7936554117935,
+                  1475.9465861824094
+                ],
+                [
+                  301.49284012648434,
+                  1150.0,
+                  1532.7
+                ]
+              ],
+              "detected": true,
+              "time_to_alert": 21.5,
+              "session": "sim-test-event-04"
+            },
+            {
+              "start": 20.0,
+              "end": 65.0,
+              "label": "simulated uuv",
+              "snr_db": 9,
+              "track": [
+                [
+                  20,
+                  1080.9735923899839,
+                  1461.618533415209
+                ],
+                [
+                  78.49999999999994,
+                  1150.0,
+                  1532.7
+                ]
+              ],
+              "detected": true,
+              "time_to_alert": 22.0,
+              "session": "sim-test-event-05"
+            },
+            {
+              "start": 90.0,
+              "end": 140.0,
+              "label": "simulated uuv",
+              "snr_db": 0,
+              "track": [
+                [
+                  90,
+                  1561.9036255066528,
+                  1576.9421817975278
+                ],
+                [
+                  155.00000000000003,
+                  1533.3,
+                  1649.9
+                ]
+              ],
+              "detected": true,
+              "time_to_alert": 3.0,
+              "session": "sim-test-event-05"
+            },
+            {
+              "start": 60.0,
+              "end": 110.0,
+              "label": "simulated diver",
+              "snr_db": 0,
+              "track": [
+                [
+                  60,
+                  1658.5521720146592,
+                  1586.3078249822424
+                ],
+                [
+                  373.65853455290244,
+                  1533.3,
+                  1649.9
+                ]
+              ],
+              "detected": true,
+              "time_to_alert": 32.5,
+              "session": "sim-test-event-06"
+            },
+            {
+              "start": 60.0,
+              "end": 120.0,
+              "label": "simulated uuv",
+              "snr_db": -3,
+              "track": [
+                [
+                  60,
+                  880.1497549797668,
+                  1333.3568584394875
+                ],
+                [
+                  137.99999999999997,
+                  766.8,
+                  1415.6
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-07"
+            },
+            {
+              "start": 20.0,
+              "end": 65.0,
+              "label": "simulated diver",
+              "snr_db": 3,
+              "track": [
+                [
+                  20,
+                  1564.6186396075411,
+                  1579.1585312711288
+                ],
+                [
+                  140.70063042707676,
+                  1533.3,
+                  1649.9
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-08"
+            },
+            {
+              "start": 85.0,
+              "end": 135.0,
+              "label": "simulated uuv",
+              "snr_db": 6,
+              "track": [
+                [
+                  85,
+                  1136.0673721722242,
+                  1426.4852490213311
+                ],
+                [
+                  150.0,
+                  1150.0,
+                  1532.7
+                ]
+              ],
+              "detected": true,
+              "time_to_alert": 2.5,
+              "session": "sim-test-event-08"
+            }
+          ],
+          "events": [
+            {
+              "id": "EVAL-001",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 89.5,
+              "alert_time": 94.0,
+              "end": 94.0,
+              "status": "ended",
+              "peak_score": 8.89,
+              "peak_time": 92.0,
+              "mean_score": 8.22,
+              "band": null,
+              "last_hot": 94.0,
+              "session": "sim-test-normal-03",
+              "false_alert": true
+            },
+            {
+              "id": "EVAL-001",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 37.0,
+              "alert_time": 41.5,
+              "end": 102.5,
+              "status": "ended",
+              "peak_score": 27.9,
+              "peak_time": 53.5,
+              "mean_score": 21.61,
+              "band": null,
+              "last_hot": 102.5,
+              "session": "sim-test-event-01",
+              "false_alert": false
+            },
+            {
+              "id": "EVAL-001",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 4.5,
+              "alert_time": 9.0,
+              "end": 76.5,
+              "status": "ended",
+              "peak_score": 12.96,
+              "peak_time": 49.5,
+              "mean_score": 10.34,
+              "band": null,
+              "last_hot": 76.5,
+              "session": "sim-test-event-02",
+              "false_alert": false
+            },
+            {
+              "id": "EVAL-002",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 83.5,
+              "alert_time": 88.5,
+              "end": 135.5,
+              "status": "ended",
+              "peak_score": 21.06,
+              "peak_time": 134.5,
+              "mean_score": 11.81,
+              "band": null,
+              "last_hot": 135.5,
+              "session": "sim-test-event-02",
+              "false_alert": false
+            },
+            {
+              "id": "EVAL-001",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 48.5,
+              "alert_time": 53.0,
+              "end": 122.0,
+              "status": "ended",
+              "peak_score": 24.7,
+              "peak_time": 70.0,
+              "mean_score": 20.2,
+              "band": null,
+              "last_hot": 122.0,
+              "session": "sim-test-event-03",
+              "false_alert": false
+            },
+            {
+              "id": "EVAL-001",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 57.0,
+              "alert_time": 61.5,
+              "end": 103.0,
+              "status": "ended",
+              "peak_score": 21.42,
+              "peak_time": 70.0,
+              "mean_score": 15.08,
+              "band": null,
+              "last_hot": 103.0,
+              "session": "sim-test-event-04",
+              "false_alert": false
+            },
+            {
+              "id": "EVAL-001",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 37.5,
+              "alert_time": 42.0,
+              "end": 67.0,
+              "status": "ended",
+              "peak_score": 15.06,
+              "peak_time": 64.0,
+              "mean_score": 11.09,
+              "band": null,
+              "last_hot": 67.0,
+              "session": "sim-test-event-05",
+              "false_alert": false
+            },
+            {
+              "id": "EVAL-002",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 88.5,
+              "alert_time": 93.0,
+              "end": 141.0,
+              "status": "ended",
+              "peak_score": 18.53,
+              "peak_time": 99.0,
+              "mean_score": 12.49,
+              "band": null,
+              "last_hot": 141.0,
+              "session": "sim-test-event-05",
+              "false_alert": false
+            },
+            {
+              "id": "EVAL-001",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 88.0,
+              "alert_time": 92.5,
+              "end": 98.5,
+              "status": "ended",
+              "peak_score": 13.33,
+              "peak_time": 93.5,
+              "mean_score": 10.82,
+              "band": null,
+              "last_hot": 98.5,
+              "session": "sim-test-event-06",
+              "false_alert": false
+            },
+            {
+              "id": "EVAL-002",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 133.5,
+              "alert_time": 138.0,
+              "end": 146.0,
+              "status": "ended",
+              "peak_score": 20.34,
+              "peak_time": 139.5,
+              "mean_score": 13.39,
+              "band": null,
+              "last_hot": 146.0,
+              "session": "sim-test-event-06",
+              "false_alert": true
+            },
+            {
+              "id": "EVAL-001",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 83.0,
+              "alert_time": 87.5,
+              "end": 137.0,
+              "status": "ended",
+              "peak_score": 21.83,
+              "peak_time": 108.5,
+              "mean_score": 18.76,
+              "band": null,
+              "last_hot": 137.0,
+              "session": "sim-test-event-08",
+              "false_alert": false
+            }
+          ],
+          "window_auc": 0.9348,
+          "sweep_sensitivity": [
+            {
+              "threshold": 10.344,
+              "false_alerts_per_hour": 2.26,
+              "detection_rate": 0.727,
+              "time_to_alert_median_s": 5.0,
+              "sensitivity": 10
+            },
+            {
+              "threshold": 8.772,
+              "false_alerts_per_hour": 2.26,
+              "detection_rate": 0.818,
+              "time_to_alert_median_s": 3.0,
+              "sensitivity": 25
+            },
+            {
+              "threshold": 8.229,
+              "false_alerts_per_hour": 2.26,
+              "detection_rate": 0.818,
+              "time_to_alert_median_s": 3.0,
+              "sensitivity": 40
+            },
+            {
+              "threshold": 7.796,
+              "false_alerts_per_hour": 4.51,
+              "detection_rate": 0.636,
+              "time_to_alert_median_s": 3.0,
+              "sensitivity": 50
+            },
+            {
+              "threshold": 7.314,
+              "false_alerts_per_hour": 4.51,
+              "detection_rate": 0.636,
+              "time_to_alert_median_s": 3.0,
+              "sensitivity": 60
+            },
+            {
+              "threshold": 6.381,
+              "false_alerts_per_hour": 6.77,
+              "detection_rate": 0.727,
+              "time_to_alert_median_s": 3.5,
+              "sensitivity": 75
+            },
+            {
+              "threshold": 5.147,
+              "false_alerts_per_hour": 9.03,
+              "detection_rate": 0.727,
+              "time_to_alert_median_s": 2.75,
+              "sensitivity": 90
+            }
+          ],
+          "sweep_persistence": [
+            {
+              "false_alerts_per_hour": 27.08,
+              "detection_rate": 0.364,
+              "time_to_alert_median_s": 16.0,
+              "persistence_s": 0.0
+            },
+            {
+              "false_alerts_per_hour": 18.06,
+              "detection_rate": 0.455,
+              "time_to_alert_median_s": 1.0,
+              "persistence_s": 1.0
+            },
+            {
+              "false_alerts_per_hour": 4.51,
+              "detection_rate": 0.545,
+              "time_to_alert_median_s": 7.0,
+              "persistence_s": 2.0
+            },
+            {
+              "false_alerts_per_hour": 4.51,
+              "detection_rate": 0.636,
+              "time_to_alert_median_s": 3.0,
+              "persistence_s": 4.0
+            },
+            {
+              "false_alerts_per_hour": 2.26,
+              "detection_rate": 0.545,
+              "time_to_alert_median_s": 5.0,
+              "persistence_s": 6.0
+            },
+            {
+              "false_alerts_per_hour": 2.26,
+              "detection_rate": 0.636,
+              "time_to_alert_median_s": 7.0,
+              "persistence_s": 8.0
+            }
+          ],
+          "response": {
+            "hours": 0.633,
+            "located_events": 7,
+            "loc_error_median_m": 76.0,
+            "loc_error_p90_m": 478.8,
+            "loc_inside_95_rate": 0.71,
+            "loc_modes": {
+              "array": 0,
+              "coarse": 7
+            },
+            "sorties": 8,
+            "sorties_per_hour": 12.63,
+            "sorties_on_false_alerts": 3,
+            "events_reached": 3,
+            "events_reached_rate": 0.27,
+            "contact_after_median_s": 238.0,
+            "alerts_explained_by_ais": 4,
+            "per_event": [
+              {
+                "session": "sim-test-event-01",
+                "start": 40.0,
+                "label": "simulated uuv",
+                "snr_db": 12,
+                "detected": true,
+                "loc_error_m": 76,
+                "inside_95": true,
+                "loc_mode": "coarse",
+                "contact_after_s": 238.0
+              },
+              {
+                "session": "sim-test-event-02",
+                "start": 25.0,
+                "label": "simulated uuv",
+                "snr_db": 6,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-02",
+                "start": 95.0,
+                "label": "simulated diver",
+                "snr_db": 9,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-03",
+                "start": 50.0,
+                "label": "simulated uuv",
+                "snr_db": 3,
+                "detected": true,
+                "loc_error_m": 50,
+                "inside_95": true,
+                "loc_mode": "coarse",
+                "contact_after_s": 243.5
+              },
+              {
+                "session": "sim-test-event-04",
+                "start": 40.0,
+                "label": "simulated diver",
+                "snr_db": 6,
+                "detected": true,
+                "loc_error_m": 448,
+                "inside_95": false,
+                "loc_mode": "coarse",
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-05",
+                "start": 20.0,
+                "label": "simulated uuv",
+                "snr_db": 9,
+                "detected": true,
+                "loc_error_m": 525,
+                "inside_95": false,
+                "loc_mode": "coarse",
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-05",
+                "start": 90.0,
+                "label": "simulated uuv",
+                "snr_db": 0,
+                "detected": true,
+                "loc_error_m": 107,
+                "inside_95": true,
+                "loc_mode": "coarse",
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-06",
+                "start": 60.0,
+                "label": "simulated diver",
+                "snr_db": 0,
+                "detected": true,
+                "loc_error_m": 71,
+                "inside_95": true,
+                "loc_mode": "coarse",
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-07",
+                "start": 60.0,
+                "label": "simulated uuv",
+                "snr_db": -3,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-08",
+                "start": 20.0,
+                "label": "simulated diver",
+                "snr_db": 3,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-08",
+                "start": 85.0,
+                "label": "simulated uuv",
+                "snr_db": 6,
+                "detected": true,
+                "loc_error_m": 41,
+                "inside_95": true,
+                "loc_mode": "coarse",
+                "contact_after_s": 118.5
+              }
+            ],
+            "sortie_log": [
+              {
+                "event_id": "SPEC-001",
+                "launched_at": 94.0,
+                "how": "auto",
+                "event_start": 89.5,
+                "on_scene_at": 151.5,
+                "contact_at": null,
+                "contact": null,
+                "verdict": "nothing found",
+                "back_at": 1053.0,
+                "note": "",
+                "session": "sim-test-normal-03",
+                "true_event": false
+              },
+              {
+                "event_id": "SPEC-001",
+                "launched_at": 41.5,
+                "how": "auto",
+                "event_start": 37.0,
+                "on_scene_at": 144.5,
+                "contact_at": 278.0,
+                "contact": {
+                  "at": 278.0,
+                  "range_m": 14,
+                  "bearing_deg": 327,
+                  "sonar": "Small underwater object, stationary",
+                  "close_range_acoustic_db": null,
+                  "simulated": true
+                },
+                "verdict": "confirmed intrusion",
+                "back_at": 397.5,
+                "note": "",
+                "session": "sim-test-event-01",
+                "true_event": true,
+                "contact_after_s": 238.0
+              },
+              {
+                "event_id": "SPEC-001",
+                "launched_at": 9.0,
+                "how": "auto",
+                "event_start": 4.5,
+                "on_scene_at": 106.0,
+                "contact_at": 271.5,
+                "contact": {
+                  "at": 271.5,
+                  "range_m": 15,
+                  "bearing_deg": 228,
+                  "sonar": "Small underwater object, stationary",
+                  "close_range_acoustic_db": null,
+                  "simulated": true
+                },
+                "verdict": "confirmed intrusion",
+                "back_at": 384.0,
+                "note": "",
+                "session": "sim-test-event-02",
+                "true_event": false
+              },
+              {
+                "event_id": "SPEC-001",
+                "launched_at": 53.0,
+                "how": "auto",
+                "event_start": 48.5,
+                "on_scene_at": 177.0,
+                "contact_at": 293.5,
+                "contact": {
+                  "at": 293.5,
+                  "range_m": 15,
+                  "bearing_deg": 279,
+                  "sonar": "Small underwater object, stationary",
+                  "close_range_acoustic_db": null,
+                  "simulated": true
+                },
+                "verdict": "confirmed intrusion",
+                "back_at": 432.5,
+                "note": "",
+                "session": "sim-test-event-03",
+                "true_event": true,
+                "contact_after_s": 243.5
+              },
+              {
+                "event_id": "SPEC-001",
+                "launched_at": 61.5,
+                "how": "auto",
+                "event_start": 57.0,
+                "on_scene_at": 149.0,
+                "contact_at": null,
+                "contact": null,
+                "verdict": "nothing found",
+                "back_at": null,
+                "note": "",
+                "session": "sim-test-event-04",
+                "true_event": true
+              },
+              {
+                "event_id": "SPEC-001",
+                "launched_at": 42.0,
+                "how": "auto",
+                "event_start": 37.5,
+                "on_scene_at": 98.0,
+                "contact_at": null,
+                "contact": null,
+                "verdict": "nothing found",
+                "back_at": 1011.0,
+                "note": "",
+                "session": "sim-test-event-05",
+                "true_event": true
+              },
+              {
+                "event_id": "SPEC-002",
+                "launched_at": 146.0,
+                "how": "auto",
+                "event_start": 133.5,
+                "on_scene_at": 250.0,
+                "contact_at": null,
+                "contact": null,
+                "verdict": null,
+                "back_at": null,
+                "session": "sim-test-event-06",
+                "true_event": false
+              },
+              {
+                "event_id": "SPEC-001",
+                "launched_at": 87.5,
+                "how": "auto",
+                "event_start": 83.0,
+                "on_scene_at": 192.5,
+                "contact_at": 203.5,
+                "contact": {
+                  "at": 203.5,
+                  "range_m": 14,
+                  "bearing_deg": 332,
+                  "sonar": "Small underwater object, stationary",
+                  "close_range_acoustic_db": null,
+                  "simulated": true
+                },
+                "verdict": "confirmed intrusion",
+                "back_at": 320.5,
+                "note": "",
+                "session": "sim-test-event-08",
+                "true_event": true,
+                "contact_after_s": 118.5
+              }
+            ]
+          }
+        },
+        "emd": {
+          "threshold": 6.057,
+          "persistence_s": 4.0,
+          "false_alerts": 2,
+          "normal_hours": 0.443,
+          "false_alerts_per_hour": 4.51,
+          "false_alerts_per_hour_ci95": [
+            0.55,
+            16.31
+          ],
+          "normal_only_sessions": {
+            "false_alerts": 1,
+            "hours": 0.3,
+            "false_alerts_per_hour": 3.33
+          },
+          "labelled_events": 11,
+          "detected": 2,
+          "detection_rate": 0.182,
+          "time_to_alert_median_s": 47.25,
+          "time_to_alert_mean_s": 47.25,
+          "per_event": [
+            {
+              "start": 40.0,
+              "end": 100.0,
+              "label": "simulated uuv",
+              "snr_db": 12,
+              "track": [
+                [
+                  40,
+                  347.09096473426337,
+                  1159.6222900880343
+                ],
+                [
+                  117.99999999999996,
+                  404.8,
+                  1298.5
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-01"
+            },
+            {
+              "start": 25.0,
+              "end": 70.0,
+              "label": "simulated uuv",
+              "snr_db": 6,
+              "track": [
+                [
+                  25,
+                  872.6707444830573,
+                  1435.9329045984796
+                ],
+                [
+                  83.49999999999999,
+                  766.8,
+                  1415.6
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-02"
+            },
+            {
+              "start": 95.0,
+              "end": 135.0,
+              "label": "simulated diver",
+              "snr_db": 9,
+              "track": [
+                [
+                  95,
+                  1676.53300383635,
+                  1596.341778057342
+                ],
+                [
+                  353.8772693665674,
+                  1533.3,
+                  1649.9
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-02"
+            },
+            {
+              "start": 50.0,
+              "end": 120.0,
+              "label": "simulated uuv",
+              "snr_db": 3,
+              "track": [
+                [
+                  50,
+                  1464.7757084713314,
+                  1540.9238400160475
+                ],
+                [
+                  140.99999999999997,
+                  1533.3,
+                  1649.9
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-03"
+            },
+            {
+              "start": 40.0,
+              "end": 100.0,
+              "label": "simulated diver",
+              "snr_db": 6,
+              "track": [
+                [
+                  40,
+                  1248.7936554117935,
+                  1475.9465861824094
+                ],
+                [
+                  301.49284012648434,
+                  1150.0,
+                  1532.7
+                ]
+              ],
+              "detected": true,
+              "time_to_alert": 59.0,
+              "session": "sim-test-event-04"
+            },
+            {
+              "start": 20.0,
+              "end": 65.0,
+              "label": "simulated uuv",
+              "snr_db": 9,
+              "track": [
+                [
+                  20,
+                  1080.9735923899839,
+                  1461.618533415209
+                ],
+                [
+                  78.49999999999994,
+                  1150.0,
+                  1532.7
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-05"
+            },
+            {
+              "start": 90.0,
+              "end": 140.0,
+              "label": "simulated uuv",
+              "snr_db": 0,
+              "track": [
+                [
+                  90,
+                  1561.9036255066528,
+                  1576.9421817975278
+                ],
+                [
+                  155.00000000000003,
+                  1533.3,
+                  1649.9
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-05"
+            },
+            {
+              "start": 60.0,
+              "end": 110.0,
+              "label": "simulated diver",
+              "snr_db": 0,
+              "track": [
+                [
+                  60,
+                  1658.5521720146592,
+                  1586.3078249822424
+                ],
+                [
+                  373.65853455290244,
+                  1533.3,
+                  1649.9
+                ]
+              ],
+              "detected": true,
+              "time_to_alert": 35.5,
+              "session": "sim-test-event-06"
+            },
+            {
+              "start": 60.0,
+              "end": 120.0,
+              "label": "simulated uuv",
+              "snr_db": -3,
+              "track": [
+                [
+                  60,
+                  880.1497549797668,
+                  1333.3568584394875
+                ],
+                [
+                  137.99999999999997,
+                  766.8,
+                  1415.6
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-07"
+            },
+            {
+              "start": 20.0,
+              "end": 65.0,
+              "label": "simulated diver",
+              "snr_db": 3,
+              "track": [
+                [
+                  20,
+                  1564.6186396075411,
+                  1579.1585312711288
+                ],
+                [
+                  140.70063042707676,
+                  1533.3,
+                  1649.9
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-08"
+            },
+            {
+              "start": 85.0,
+              "end": 135.0,
+              "label": "simulated uuv",
+              "snr_db": 6,
+              "track": [
+                [
+                  85,
+                  1136.0673721722242,
+                  1426.4852490213311
+                ],
+                [
+                  150.0,
+                  1150.0,
+                  1532.7
+                ]
+              ],
+              "detected": false,
+              "time_to_alert": null,
+              "session": "sim-test-event-08"
+            }
+          ],
+          "events": [
+            {
+              "id": "EVAL-001",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 83.0,
+              "alert_time": 87.5,
+              "end": 107.5,
+              "status": "ended",
+              "peak_score": 10.0,
+              "peak_time": 107.5,
+              "mean_score": 7.11,
+              "band": null,
+              "last_hot": 107.5,
+              "session": "sim-test-normal-03",
+              "false_alert": true
+            },
+            {
+              "id": "EVAL-001",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 94.5,
+              "alert_time": 99.0,
+              "end": 99.5,
+              "status": "ended",
+              "peak_score": 7.65,
+              "peak_time": 99.0,
+              "mean_score": 6.88,
+              "band": null,
+              "last_hot": 99.5,
+              "session": "sim-test-event-04",
+              "false_alert": false
+            },
+            {
+              "id": "EVAL-001",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 91.0,
+              "alert_time": 95.5,
+              "end": 97.5,
+              "status": "ended",
+              "peak_score": 7.44,
+              "peak_time": 94.0,
+              "mean_score": 6.7,
+              "band": null,
+              "last_hot": 97.5,
+              "session": "sim-test-event-06",
+              "false_alert": false
+            },
+            {
+              "id": "EVAL-002",
+              "method": "eval",
+              "label": "Unusual acoustic event (possible intrusion)",
+              "start": 135.0,
+              "alert_time": 139.5,
+              "end": 143.5,
+              "status": "ended",
+              "peak_score": 10.01,
+              "peak_time": 139.0,
+              "mean_score": 7.97,
+              "band": null,
+              "last_hot": 143.5,
+              "session": "sim-test-event-06",
+              "false_alert": true
+            }
+          ],
+          "window_auc": 0.7066,
+          "sweep_sensitivity": [
+            {
+              "threshold": 20.812,
+              "false_alerts_per_hour": 0.0,
+              "detection_rate": 0.0,
+              "time_to_alert_median_s": null,
+              "sensitivity": 10
+            },
+            {
+              "threshold": 11.3,
+              "false_alerts_per_hour": 0.0,
+              "detection_rate": 0.0,
+              "time_to_alert_median_s": null,
+              "sensitivity": 25
+            },
+            {
+              "threshold": 7.361,
+              "false_alerts_per_hour": 4.51,
+              "detection_rate": 0.0,
+              "time_to_alert_median_s": null,
+              "sensitivity": 40
+            },
+            {
+              "threshold": 6.057,
+              "false_alerts_per_hour": 4.51,
+              "detection_rate": 0.182,
+              "time_to_alert_median_s": 47.25,
+              "sensitivity": 50
+            },
+            {
+              "threshold": 4.871,
+              "false_alerts_per_hour": 6.77,
+              "detection_rate": 0.455,
+              "time_to_alert_median_s": 34.5,
+              "sensitivity": 60
+            },
+            {
+              "threshold": 4.034,
+              "false_alerts_per_hour": 11.29,
+              "detection_rate": 0.545,
+              "time_to_alert_median_s": 15.75,
+              "sensitivity": 75
+            },
+            {
+              "threshold": 3.612,
+              "false_alerts_per_hour": 11.29,
+              "detection_rate": 0.455,
+              "time_to_alert_median_s": 24.0,
+              "sensitivity": 90
+            }
+          ],
+          "sweep_persistence": [
+            {
+              "false_alerts_per_hour": 13.54,
+              "detection_rate": 0.455,
+              "time_to_alert_median_s": 9.5,
+              "persistence_s": 0.0
+            },
+            {
+              "false_alerts_per_hour": 11.29,
+              "detection_rate": 0.455,
+              "time_to_alert_median_s": 10.5,
+              "persistence_s": 1.0
+            },
+            {
+              "false_alerts_per_hour": 4.51,
+              "detection_rate": 0.364,
+              "time_to_alert_median_s": 39.5,
+              "persistence_s": 2.0
+            },
+            {
+              "false_alerts_per_hour": 4.51,
+              "detection_rate": 0.182,
+              "time_to_alert_median_s": 47.25,
+              "persistence_s": 4.0
+            },
+            {
+              "false_alerts_per_hour": 4.51,
+              "detection_rate": 0.0,
+              "time_to_alert_median_s": null,
+              "persistence_s": 6.0
+            },
+            {
+              "false_alerts_per_hour": 4.51,
+              "detection_rate": 0.0,
+              "time_to_alert_median_s": null,
+              "persistence_s": 8.0
+            }
+          ],
+          "response": {
+            "hours": 0.633,
+            "located_events": 2,
+            "loc_error_median_m": 500.0,
+            "loc_error_p90_m": 836.8,
+            "loc_inside_95_rate": 0.5,
+            "loc_modes": {
+              "array": 0,
+              "coarse": 2
+            },
+            "sorties": 3,
+            "sorties_per_hour": 4.74,
+            "sorties_on_false_alerts": 2,
+            "events_reached": 0,
+            "events_reached_rate": 0.0,
+            "contact_after_median_s": null,
+            "alerts_explained_by_ais": 2,
+            "per_event": [
+              {
+                "session": "sim-test-event-01",
+                "start": 40.0,
+                "label": "simulated uuv",
+                "snr_db": 12,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-02",
+                "start": 25.0,
+                "label": "simulated uuv",
+                "snr_db": 6,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-02",
+                "start": 95.0,
+                "label": "simulated diver",
+                "snr_db": 9,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-03",
+                "start": 50.0,
+                "label": "simulated uuv",
+                "snr_db": 3,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-04",
+                "start": 40.0,
+                "label": "simulated diver",
+                "snr_db": 6,
+                "detected": true,
+                "loc_error_m": 921,
+                "inside_95": false,
+                "loc_mode": "coarse",
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-05",
+                "start": 20.0,
+                "label": "simulated uuv",
+                "snr_db": 9,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-05",
+                "start": 90.0,
+                "label": "simulated uuv",
+                "snr_db": 0,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-06",
+                "start": 60.0,
+                "label": "simulated diver",
+                "snr_db": 0,
+                "detected": true,
+                "loc_error_m": 79,
+                "inside_95": true,
+                "loc_mode": "coarse",
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-07",
+                "start": 60.0,
+                "label": "simulated uuv",
+                "snr_db": -3,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-08",
+                "start": 20.0,
+                "label": "simulated diver",
+                "snr_db": 3,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              },
+              {
+                "session": "sim-test-event-08",
+                "start": 85.0,
+                "label": "simulated uuv",
+                "snr_db": 6,
+                "detected": false,
+                "loc_error_m": null,
+                "inside_95": null,
+                "loc_mode": null,
+                "contact_after_s": null
+              }
+            ],
+            "sortie_log": [
+              {
+                "event_id": "EMD-001",
+                "launched_at": 87.5,
+                "how": "auto",
+                "event_start": 83.0,
+                "on_scene_at": 181.5,
+                "contact_at": null,
+                "contact": null,
+                "verdict": "nothing found",
+                "back_at": null,
+                "note": "",
+                "session": "sim-test-normal-03",
+                "true_event": false
+              },
+              {
+                "event_id": "EMD-001",
+                "launched_at": 99.0,
+                "how": "auto",
+                "event_start": 94.5,
+                "on_scene_at": 170.5,
+                "contact_at": null,
+                "contact": null,
+                "verdict": "nothing found",
+                "back_at": null,
+                "note": "",
+                "session": "sim-test-event-04",
+                "true_event": true
+              },
+              {
+                "event_id": "EMD-002",
+                "launched_at": 145.5,
+                "how": "auto",
+                "event_start": 135.0,
+                "on_scene_at": 252.5,
+                "contact_at": null,
+                "contact": null,
+                "verdict": null,
+                "back_at": null,
+                "session": "sim-test-event-06",
+                "true_event": false
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
