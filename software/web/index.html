@@ -69,128 +69,130 @@
     </p>
   </section>
 
-  <section class="boat-card" id="boatCard" aria-label="Inspection boat">
-    <div class="panel-head">
-      <h2>Inspection boat</h2>
-      <span class="sim-flag">Simulated boat and sensors</span>
-    </div>
-    <p class="boat-state" id="boatState">Docked, ready</p>
-    <p class="boat-detail" id="boatDetail">Start a replay of an array recording to enable dispatch.</p>
-    <div class="countdown" id="countdownBox" hidden>
-      <span>Launching in <strong id="countdownNum" class="num">15</strong> s</span>
-      <div class="cd-actions">
-        <button class="btn danger" id="cancelLaunch">Cancel launch</button>
-        <button class="btn" id="launchNow">Launch now</button>
-      </div>
-    </div>
-    <ul class="check-list" id="checkList" hidden></ul>
-    <div class="contact" id="contactBox" hidden></div>
-    <div class="verdicts" id="verdictBox" hidden>
-      <p class="verdict-q">What did the inspection find?</p>
-      <div class="verdict-actions">
-        <button class="btn danger" data-verdict="confirmed intrusion">Confirmed intrusion</button>
-        <button class="btn" data-verdict="false alarm: known activity">False alarm</button>
-        <button class="btn" data-verdict="nothing found">Nothing found</button>
-      </div>
-    </div>
-    <div class="boat-actions">
-      <button class="btn primary" id="dispatchBtn" disabled>Dispatch boat</button>
-      <button class="btn" id="recallBtn" hidden>Recall boat</button>
-    </div>
-    <div class="boat-policy">
-      <label class="switch"><input type="checkbox" id="autoDispatch" checked> Auto-dispatch on alert</label>
-      <label class="inline">Cancel window
-        <select id="cancelSel"><option value="0">none</option><option value="10">10 s</option><option value="15" selected>15 s</option><option value="30">30 s</option></select>
-      </label>
-    </div>
-  </section>
-
   <section class="picture" aria-label="Live acoustic picture">
-    <div class="panel-head">
-      <h2>Sound frequencies over time</h2>
-      <span class="hint">Brighter = louder. Low pitch at the bottom.</span>
-    </div>
-    <div class="spec-wrap">
-      <div class="freq-axis" id="freqAxis"></div>
-      <canvas id="specCanvas" height="200"></canvas>
-    </div>
-    <div class="panel-head">
-      <h2>Anomaly score</h2>
-      <span class="hint"><span class="key key-score"></span>score <span class="key key-thr"></span>alert threshold <span class="key key-event"></span>alert raised</span>
-    </div>
-    <canvas id="scoreCanvas" height="150"></canvas>
-  </section>
-
-  <section class="alert-card" id="alertCard" aria-label="Current alert">
-    <div class="empty" id="alertEmpty">
-      <h2>No active alert</h2>
-      <p>An alert appears here when an unusual sound persists past the threshold for the set time.</p>
-    </div>
-    <div class="alert-body" id="alertBody" hidden>
-      <div class="alert-top">
-        <span class="alert-id num" id="alertId"></span>
-        <span class="alert-status" id="alertStatus"></span>
+    <div class="pic-pane">
+      <div class="panel-head">
+        <h2>Sound frequencies over time</h2>
+        <span class="hint">Brighter = louder</span>
       </div>
-      <h2 id="alertTitle">Unusual acoustic event</h2>
-      <p class="alert-sub">Possible intrusion. Not confirmed: verify before escalating.</p>
-      <dl class="alert-facts">
-        <div><dt>Started</dt><dd id="aStart" class="num"></dd></div>
-        <div><dt>Alert raised</dt><dd id="aRaised" class="num"></dd></div>
-        <div><dt>Duration</dt><dd id="aDur" class="num"></dd></div>
-        <div><dt>Peak score</dt><dd id="aPeak" class="num"></dd></div>
-        <div class="wide"><dt>Strongest unusual energy</dt><dd id="aBand" class="num"></dd></div>
-        <div class="wide"><dt>Estimated location</dt><dd id="aLoc"></dd></div>
-        <div class="wide"><dt>Vessel tracking (AIS)</dt><dd id="aAis"></dd></div>
-      </dl>
-      <div class="alert-actions">
-        <button class="btn primary" id="aPlay">Play clip</button>
-        <button class="btn" id="aAck">Acknowledge</button>
+      <div class="spec-wrap">
+        <div class="freq-axis" id="freqAxis"></div>
+        <div class="canvas-box"><canvas id="specCanvas"></canvas></div>
       </div>
-      <audio id="clipAudio" controls preload="none" hidden></audio>
+    </div>
+    <div class="pic-pane">
+      <div class="panel-head">
+        <h2>Anomaly score</h2>
+        <span class="hint"><span class="key key-score"></span>score <span class="key key-thr"></span>threshold <span class="key key-event"></span>alert</span>
+      </div>
+      <div class="canvas-box"><canvas id="scoreCanvas"></canvas></div>
     </div>
   </section>
 
-  <section class="log" aria-label="Event log">
-    <div class="panel-head"><h2>Event log</h2><span class="hint" id="logCount">0 events</span></div>
-    <div class="table-wrap">
-      <table class="events">
-        <thead><tr><th>ID</th><th>Raised at</th><th>Duration</th><th>Peak</th><th>Energy band</th><th>Status</th><th></th></tr></thead>
-        <tbody id="eventRows"><tr class="placeholder"><td colspan="7">No events yet.</td></tr></tbody>
-      </table>
-    </div>
-  </section>
+  <div class="side">
+    <section class="alert-card" id="alertCard" aria-label="Current alert">
+      <div class="empty" id="alertEmpty">
+        <h2>No active alert</h2>
+        <p>An alert appears here when an unusual sound persists past the threshold for the set time.</p>
+      </div>
+      <div class="alert-body" id="alertBody" hidden>
+        <div class="alert-top">
+          <span class="alert-id num" id="alertId"></span>
+          <span class="alert-status" id="alertStatus"></span>
+        </div>
+        <h2 id="alertTitle">Unusual acoustic event</h2>
+        <p class="alert-sub">Possible intrusion. Not confirmed: verify before escalating.</p>
+        <dl class="alert-facts">
+          <div><dt>Started</dt><dd id="aStart" class="num"></dd></div>
+          <div><dt>Alert raised</dt><dd id="aRaised" class="num"></dd></div>
+          <div><dt>Duration</dt><dd id="aDur" class="num"></dd></div>
+          <div><dt>Peak score</dt><dd id="aPeak" class="num"></dd></div>
+          <div class="wide"><dt>Strongest unusual energy</dt><dd id="aBand" class="num"></dd></div>
+          <div class="wide"><dt>Estimated location</dt><dd id="aLoc"></dd></div>
+          <div class="wide"><dt>Vessel tracking (AIS)</dt><dd id="aAis"></dd></div>
+        </dl>
+        <div class="alert-actions">
+          <button class="btn primary" id="aPlay">Play clip</button>
+          <button class="btn" id="aAck">Acknowledge</button>
+        </div>
+        <audio id="clipAudio" controls preload="none" hidden></audio>
+      </div>
+    </section>
 
-  <section class="controls" aria-label="Replay and detector controls">
-    <div class="ctrl feed-ctrl">
-      <label for="recSelect">Recording to replay</label>
-      <select id="recSelect"></select>
-      <div class="transport">
-        <button class="btn primary" id="startBtn">Start live replay</button>
-        <button class="btn" id="pauseBtn" disabled>Pause</button>
-        <label class="inline">Speed
-          <select id="speedSel"><option value="1">1×</option><option value="2">2×</option><option value="4" selected>4×</option><option value="8">8×</option></select>
+    <section class="boat-card" id="boatCard" aria-label="Inspection boat">
+      <div class="panel-head">
+        <h2>Inspection boat</h2>
+        <span class="sim-flag">Simulated</span>
+      </div>
+      <p class="boat-state" id="boatState">Docked, ready</p>
+      <p class="boat-detail" id="boatDetail">Start a replay of an array recording to enable dispatch.</p>
+      <div class="countdown" id="countdownBox" hidden>
+        <span>Launching in <strong id="countdownNum" class="num">15</strong> s</span>
+        <div class="cd-actions">
+          <button class="btn danger" id="cancelLaunch">Cancel launch</button>
+          <button class="btn" id="launchNow">Launch now</button>
+        </div>
+      </div>
+      <ul class="check-list" id="checkList" hidden></ul>
+      <div class="contact" id="contactBox" hidden></div>
+      <div class="verdicts" id="verdictBox" hidden>
+        <p class="verdict-q">What did the inspection find?</p>
+        <div class="verdict-actions">
+          <button class="btn danger" data-verdict="confirmed intrusion">Confirmed intrusion</button>
+          <button class="btn" data-verdict="false alarm: known activity">False alarm</button>
+          <button class="btn" data-verdict="nothing found">Nothing found</button>
+        </div>
+      </div>
+      <div class="boat-actions">
+        <button class="btn primary" id="dispatchBtn" disabled>Dispatch boat</button>
+        <button class="btn" id="recallBtn" hidden>Recall boat</button>
+      </div>
+      <div class="boat-policy">
+        <label class="switch"><input type="checkbox" id="autoDispatch" checked> Auto-dispatch</label>
+        <label class="inline">Cancel window
+          <select id="cancelSel"><option value="0">none</option><option value="10">10 s</option><option value="15" selected>15 s</option><option value="30">30 s</option></select>
         </label>
       </div>
-      <audio id="feedAudio" controls preload="auto"></audio>
+    </section>
+
+    <section class="log" aria-label="Event log">
+      <div class="panel-head"><h2>Event log</h2><span class="hint" id="logCount">0 events</span></div>
+      <div class="table-wrap">
+        <table class="events">
+          <thead><tr><th>ID</th><th>Raised</th><th>Dur.</th><th>Peak</th><th>Band</th><th>Status</th><th></th></tr></thead>
+          <tbody id="eventRows"><tr class="placeholder"><td colspan="7">No events yet.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="controls" aria-label="Replay and detector controls">
+    <label class="ctrl ctrl-rec">Recording
+      <select id="recSelect"></select>
+    </label>
+    <div class="transport">
+      <button class="btn primary" id="startBtn">Start live replay</button>
+      <button class="btn" id="pauseBtn" disabled>Pause</button>
+      <label class="inline">Speed
+        <select id="speedSel"><option value="1">1×</option><option value="2">2×</option><option value="4" selected>4×</option><option value="8">8×</option></select>
+      </label>
     </div>
-    <div class="ctrl">
-      <label for="sensRange">Sensitivity <output id="sensOut" class="num">50</output></label>
+    <audio id="feedAudio" controls preload="auto"></audio>
+    <div class="ctrl-break" aria-hidden="true"></div>
+    <label class="ctrl ctrl-slider" title="Higher catches fainter sounds but raises more false alerts.">
+      <span>Sensitivity <output id="sensOut" class="num">50</output> <span class="muted">(<span id="sensRate" class="num">1%</span> over on normal)</span></span>
       <input type="range" id="sensRange" min="0" max="100" step="5" value="50">
-      <p class="ctrl-help">Higher catches fainter sounds but raises more false alerts. Expected over-threshold rate on normal audio: <span id="sensRate" class="num">1%</span> of windows.</p>
-    </div>
-    <div class="ctrl">
-      <label for="persRange">Must persist for <output id="persOut" class="num">4.0 s</output></label>
+    </label>
+    <label class="ctrl ctrl-slider" title="How long a sound must stay unusual before an alert is raised. Longer means fewer false alerts but slower warnings.">
+      <span>Must persist for <output id="persOut" class="num">4.0 s</output></span>
       <input type="range" id="persRange" min="0" max="12" step="0.5" value="4">
-      <p class="ctrl-help">How long a sound must stay unusual before an alert is raised. Longer means fewer false alerts but slower warnings.</p>
-    </div>
-    <div class="ctrl">
-      <label for="methodSel">Detection method</label>
+    </label>
+    <label class="ctrl ctrl-method" title="Both methods run on every window. This picks which one drives the officer alerts.">Method
       <select id="methodSel">
-        <option value="spectrogram">Spectrogram (conventional)</option>
-        <option value="emd">EMD (empirical mode decomposition)</option>
+        <option value="spectrogram">Spectrogram</option>
+        <option value="emd">EMD</option>
       </select>
-      <p class="ctrl-help">Both methods run on every window. This picks which one drives the officer alerts.</p>
-    </div>
+    </label>
   </section>
 </main>
 

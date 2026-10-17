@@ -60,6 +60,7 @@ document.querySelectorAll(".view-btn").forEach((btn) =>
   btn.addEventListener("click", () => {
     document.querySelectorAll(".view-btn").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
     $("view-officer").hidden = btn.dataset.view !== "officer";
+    document.body.classList.toggle("officer-active", btn.dataset.view === "officer");
     $("view-analyst").hidden = btn.dataset.view !== "analyst";
     if (btn.dataset.view === "analyst") { renderLibrary(); loadReport(); drawCompare(); loadInspections(); }
     else { drawSpec(); drawScore(); drawMap(); }
@@ -632,7 +633,7 @@ function drawSweep(cv, res, kind) {
 // ----------------------------------------------------------------- boot
 window.addEventListener("resize", () => { drawSpec(); drawScore(); drawCompare(); drawMap(); });
 (async function boot() {
-  document.body.classList.add("standby");
+  document.body.classList.add("standby", "officer-active");
   syncControlLabels();
   try { S.harbour = await api("/api/harbour"); } catch {}
   await refreshStatus();
@@ -656,6 +657,10 @@ function drawMap() {
   const aspect = (svg.clientWidth || 1000) / (svg.clientHeight || 500);
   if ((vx1 - vx0) / (vy1 - vy0) < aspect) { const w = (vy1 - vy0) * aspect, c = (vx0 + vx1) / 2; vx0 = c - w / 2; vx1 = c + w / 2; }
   else { const h = (vx1 - vx0) / aspect, c = (vy0 + vy1) / 2; vy0 = c - h / 2; vy1 = c + h / 2; }
+  if (vx1 - vx0 > bx1 - bx0) {  // panel wider than the imagery: use the full image width, crop vertically
+    const cy = (vy0 + vy1) / 2, h = (bx1 - bx0) / aspect;
+    vx0 = bx0; vx1 = bx1; vy0 = cy - h / 2; vy1 = cy + h / 2;
+  }
   const shift = (a0, a1, lo, hi) => (a0 < lo ? [lo, a1 + lo - a0] : a1 > hi ? [a0 - (a1 - hi), hi] : [a0, a1]);
   [vx0, vx1] = shift(vx0, vx1, bx0, bx1); [vy0, vy1] = shift(vy0, vy1, by0, by1);
   const P = (x, y) => [+(x - bx0).toFixed(1), +(by1 - y).toFixed(1)];  // numbers, so offsets add rather than concatenate
@@ -748,7 +753,13 @@ function updateBoat() {
       $("checkList").hidden = false; $("checkList").innerHTML = "<li>Auto-dispatch is off. Dispatch manually if needed.</li>";
     }
   }
-  if (["en_route", "searching", "inspecting", "awaiting_verdict"].includes(b.state)) $("recallBtn").hidden = false;
+  if (["en_route", "searching"].includes(b.state)) $("recallBtn").hidden = false;  // a verdict sends the boat home anyway
+  $("boatDetail").hidden = ["inspecting", "awaiting_verdict"].includes(b.state) && !!b.contact;
+  // while the boat is out, the alert card shrinks to a summary so the boat's controls stay on screen
+  $("alertCard").classList.toggle("compact", b.state !== "docked");
+  // only show the action row when one of its buttons can actually be used
+  $("dispatchBtn").hidden = b.state !== "docked";
+  document.querySelector(".boat-actions").hidden = $("dispatchBtn").hidden && $("recallBtn").hidden;
   if (b.contact || (b.state !== "docked" && b.camera.length)) {
     const c = b.contact, lines = [];
     if (c) lines.push(`<p><strong>Sonar:</strong> ${esc(c.sonar)}, ${c.range_m} m, bearing ${String(c.bearing_deg).padStart(3, "0")}°</p>`);

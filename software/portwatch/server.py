@@ -374,6 +374,15 @@ def stream_clip(sid: str, start: float, end: float, pad: float = 2.0, hydrophone
                     headers={"Content-Disposition": f'inline; filename="event_{start:.0f}-{end:.0f}s.wav"'})
 
 
+@app.middleware("http")
+async def _no_stale_assets(request, call_next):
+    """Always revalidate the dashboard files, so a git pull is picked up on the next reload."""
+    resp = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 app.mount("/static", StaticFiles(directory=WEB), name="static")
 
 

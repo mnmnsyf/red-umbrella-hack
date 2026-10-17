@@ -344,3 +344,229 @@ details summary { cursor: pointer; font-weight: 600; margin-top: 12px; }
 .switch { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
 .switch input { width: 18px; height: 18px; accent-color: var(--boat); }
 .boat-policy .inline { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+
+/* ======================================================================
+   One-screen officer layout (for live use and demo recording)
+   Header + grid sized to the window; panels scale, long lists scroll inside.
+   ====================================================================== */
+body.officer-active { height: 100vh; overflow: hidden; display: flex; flex-direction: column; font-size: 15px; }
+body.officer-active .topbar { flex: none; padding: 8px 18px; }
+body.officer-active .banner { flex: none; padding: 6px 18px; }
+body.officer-active .officer {
+  flex: 1 1 auto; min-height: 0;
+  padding: 10px 14px 12px; gap: 10px;
+  grid-template-columns: clamp(210px, 16vw, 290px) minmax(0, 1fr) clamp(300px, 25vw, 430px);
+  grid-template-rows: minmax(0, 1.6fr) minmax(0, 1fr) auto;
+  grid-template-areas:
+    "threat map side"
+    "threat picture side"
+    "controls controls controls";
+}
+.officer .side { grid-area: side; display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; }
+.officer .picture, .officer .map-panel, .officer .log, .officer .alert-card, .officer .boat-card, .officer .controls { padding: 10px 12px; }
+.officer .panel-head { margin-bottom: 6px; }
+.officer .panel-head h2 { font-size: 1rem; }
+.officer .hint { font-size: .82rem; }
+
+/* threat board */
+body.officer-active .threat { padding: 14px 16px; gap: 10px; min-height: 0; overflow: hidden; }
+body.officer-active .threat-word { font-size: clamp(2.2rem, 3.4vw, 4.2rem); }
+body.officer-active .ladder li { padding: 2px 8px; font-size: .85rem; }
+body.officer-active .threat-summary { font-size: .98rem; min-height: 0; }
+body.officer-active .readout dd { font-size: 1.2rem; }
+
+/* map fills its cell */
+.officer .map-panel { display: flex; flex-direction: column; min-height: 0; }
+.officer #mapSvg { flex: 1 1 0; min-height: 0; height: auto; }
+.officer .map-legend { margin: 4px 0 0; font-size: .8rem; }
+
+/* spectrogram and score side by side, canvases fill their boxes */
+.officer .picture { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px; min-height: 0; }
+.officer .pic-pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.officer .spec-wrap { flex: 1 1 0; min-height: 0; margin: 0; }
+.canvas-box { position: relative; flex: 1 1 0; min-height: 0; min-width: 0; }
+.canvas-box canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+.officer #specCanvas { border-radius: var(--radius-sm); background: var(--spec-bg); }
+.officer .freq-axis { width: 44px; font-size: .72rem; }
+
+/* side column: alert, boat, log */
+.officer .alert-card, .officer .boat-card { flex: none; }
+.officer .log { flex: 1 1 auto; min-height: 120px; display: flex; flex-direction: column; }
+.officer .log .table-wrap { flex: 1 1 0; min-height: 0; overflow-y: auto; }
+.officer table.events { font-size: .82rem; }
+.officer table.events th, .officer table.events td { padding: 3px 5px; }
+.officer .alert-body { gap: 5px; }
+.officer .alert-body h2 { font-size: 1.15rem; }
+.officer .alert-sub { font-size: .86rem; }
+.officer .alert-facts { gap: 3px 12px; margin: 2px 0; }
+.officer .alert-facts dt { font-size: .74rem; }
+.officer .alert-facts dd { font-size: .92rem; }
+.officer .empty h2 { font-size: 1rem; }
+.officer .empty p { font-size: .86rem; margin-top: 2px; }
+.officer .boat-card { gap: 5px; }
+.officer .boat-state { font-size: 1.1rem; }
+.officer .boat-detail, .officer .check-list, .officer .contact { font-size: .86rem; }
+.officer .countdown { padding: 6px 10px; gap: 6px; }
+.officer .countdown strong { font-size: 1.3rem; }
+.officer .boat-policy { padding-top: 6px; font-size: .84rem; gap: 10px; }
+.officer .btn { padding: 4px 10px; font-size: .9rem; }
+
+/* controls: one compact row */
+.officer .controls { display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
+.officer .controls .ctrl { display: flex; flex-direction: column; gap: 3px; font-weight: 600; font-size: .85rem; min-width: 0; }
+.officer .ctrl-rec { flex: 1 1 220px; max-width: 320px; }
+.officer .ctrl-slider { flex: 1 1 180px; max-width: 280px; }
+.officer .ctrl-slider > span { display: flex; gap: 4px; align-items: baseline; white-space: nowrap; }
+.officer .ctrl-slider .muted { font-weight: 400; font-size: .78rem; }
+.officer .controls select { padding: 4px 6px; }
+.officer .transport { flex: none; }
+.officer #feedAudio { flex: 1 1 220px; max-width: 320px; height: 32px; }
+
+/* small windows: fall back to a scrolling stacked layout */
+@media (max-width: 699px), (max-height: 600px) {
+  body.officer-active { height: auto; overflow: auto; display: block; }
+  body.officer-active .officer {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-template-areas: "threat" "map" "side" "picture" "controls";
+  }
+  .officer #mapSvg { flex: none; height: 380px; }
+  .officer .picture { grid-template-columns: minmax(0, 1fr); }
+  .officer .pic-pane { height: 200px; }
+  .officer .side { overflow: visible; }
+}
+
+/* compact side column and single-row controls (laptop screens) */
+.officer .alert-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.officer .alert-facts > div { display: flex; gap: 6px; align-items: baseline; min-width: 0; }
+.officer .alert-facts dt { flex: none; }
+.officer .alert-facts dt::after { content: ":"; }
+.officer .alert-facts dd { min-width: 0; }
+.officer .alert-facts .wide { display: block; }
+.officer .alert-facts .wide dt { display: inline; }
+.officer .alert-facts .wide dd { display: inline; margin-left: 4px; }
+.officer .log { min-height: 84px; }
+.officer .controls { flex-wrap: nowrap; gap: 14px; }
+.officer .ctrl-rec { flex: 1 1 180px; max-width: 280px; }
+.officer .ctrl-slider { flex: 1 1 150px; max-width: 250px; }
+.officer .ctrl-method { flex: none; }
+.officer #feedAudio { flex: 1 1 160px; max-width: 280px; }
+.officer .transport .btn { white-space: nowrap; }
+@media (max-width: 699px), (max-height: 600px) {
+  .officer .controls { flex-wrap: wrap; }
+}
+/* alert card summary mode while the inspection boat is out */
+.officer .alert-card.compact .alert-sub,
+.officer .alert-card.compact .alert-facts > div:not(.wide),
+.officer .alert-card.compact .alert-facts > .wide:nth-of-type(5),
+.officer .alert-card.compact .alert-facts > .wide:nth-of-type(7) { display: none; }
+.officer .alert-card.compact .alert-body h2 { font-size: 1rem; }
+
+/* ======================================================================
+   Half-screen officer layout (< 1500 px wide): the dashboard takes the left
+   half of the screen while a visualisation plays on the right.
+   ====================================================================== */
+@media (max-width: 1499px) and (min-width: 700px) and (min-height: 601px) {
+  body.officer-active { font-size: 14px; }
+  body.officer-active .topbar { padding: 6px 14px; }
+  body.officer-active .brand h1 { font-size: 1.15rem; }
+  body.officer-active .brand-mark { width: 26px; height: 26px; }
+  body.officer-active .feed { max-width: 42vw; font-size: .8rem; }
+  body.officer-active #feedClock { font-size: 1.2rem; }
+  body.officer-active .officer {
+    padding: 8px 10px 10px; gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto minmax(0, 1.55fr) auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "threat threat threat"
+      "map map map"
+      "alert boat log"
+      "picture picture picture"
+      "controls controls controls";
+  }
+  .officer .side { display: contents; }
+  .officer .alert-card { grid-area: alert; min-height: 0; overflow-y: auto; }
+  .officer .boat-card { grid-area: boat; min-height: 0; overflow-y: auto; }
+  .officer .log { grid-area: log; min-height: 0; }
+
+  /* threat board becomes a horizontal strip */
+  body.officer-active .threat {
+    display: grid; padding: 8px 14px; gap: 2px 18px; align-items: center;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+  }
+  .officer .threat-caption { grid-area: 1 / 1; font-size: .78rem; }
+  body.officer-active .threat-word { grid-area: 2 / 1; margin: 0; font-size: clamp(1.9rem, 3.6vw, 2.8rem); }
+  .officer .ladder { grid-area: 1 / 2 / 3 / 3; gap: 2px; }
+  body.officer-active .ladder li { padding: 0 8px; font-size: .74rem; line-height: 1.35; }
+  body.officer-active .threat-summary { grid-area: 1 / 3; font-size: .9rem; line-height: 1.25; }
+  .officer .persist { grid-area: 2 / 3; }
+  .officer .persist-head { font-size: .78rem; margin-bottom: 2px; }
+  .officer .persist-track { height: 7px; }
+  .officer .readout { grid-area: 1 / 4 / 3 / 5; grid-template-columns: repeat(3, auto); gap: 0 14px; }
+  .officer .readout div:last-child { grid-column: auto; }
+  .officer .readout dt { font-size: .72rem; }
+  body.officer-active .readout dd { font-size: 1.05rem; }
+  .officer .detector-line { display: none; }
+
+  /* side panels: compact */
+  .officer .alert-facts { grid-template-columns: minmax(0, 1fr); }
+  .officer .alert-facts dd, .officer .alert-facts dt { font-size: .8rem; }
+  .officer .alert-body h2 { font-size: 1rem; }
+  .officer .alert-sub { font-size: .78rem; }
+  .officer .boat-state { font-size: 1rem; }
+  .officer .sim-flag { font-size: .7rem; }
+  .officer .boat-policy { flex-wrap: wrap; gap: 4px 10px; }
+  .officer .verdict-actions .btn, .officer .cd-actions .btn { font-size: .8rem; padding: 3px 8px; }
+  .officer table.events th:nth-child(3), .officer table.events td:nth-child(3),
+  .officer table.events th:nth-child(5), .officer table.events td:nth-child(5) { display: none; }
+  .officer .panel-head .hint { font-size: .74rem; }
+  .officer .map-legend { font-size: .74rem; }
+
+  /* controls: two tidy rows */
+  .officer .controls { flex-wrap: wrap; gap: 6px 14px; align-items: flex-end; }
+  .officer .ctrl-rec { flex: 1 1 200px; max-width: none; }
+  .officer #feedAudio { flex: 1 1 180px; max-width: none; }
+  .officer .ctrl-slider { flex: 1 1 200px; max-width: none; }
+}
+.ctrl-break { display: none; }
+@media (max-width: 1499px) and (min-width: 700px) and (min-height: 601px) {
+  body.officer-active .officer { grid-template-rows: auto minmax(0, 2.4fr) auto minmax(0, 1fr) auto; }
+  .officer .ctrl-break { display: block; flex-basis: 100%; height: 0; }
+  .officer #feedAudio { flex: 1 1 160px; }
+  .officer .ctrl-slider { flex: 1 1 160px; }
+  .officer .ctrl-method { flex: none; }
+  .officer .controls { padding: 8px 12px; }
+  .officer .alert-card .empty p { font-size: .8rem; }
+}
+@media (max-width: 1499px) and (min-width: 700px) and (min-height: 601px) {
+  body.officer-active .topbar { padding: 4px 12px; }
+  body.officer-active .clock-label { display: none; }
+  /* controls: labels inline with their fields */
+  .officer .controls { align-items: center; gap: 6px 16px; padding: 6px 12px; }
+  .officer .controls .ctrl { flex-direction: row; align-items: center; gap: 8px; white-space: nowrap; }
+  .officer .ctrl-slider > span { flex: none; }
+  .officer .ctrl-slider input[type="range"] { flex: 1 1 auto; min-width: 70px; }
+  .officer .ctrl-rec select { min-width: 0; flex: 1 1 auto; }
+  .officer #feedAudio { height: 30px; }
+  /* boat card: policy toggles share the header row */
+  .officer .boat-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: start; column-gap: 8px; }
+  .officer .boat-card > * { grid-column: 1 / -1; }
+  .officer .boat-card > .panel-head { grid-column: 1; grid-row: 1; margin: 0; }
+  .officer .boat-card > .boat-policy { grid-column: 2; grid-row: 1; margin: 0; padding: 0; border: 0; font-size: .74rem; gap: 2px 8px; justify-content: flex-end; }
+  .officer .boat-card .sim-flag { display: none; }
+  .officer .boat-policy .switch input { width: 14px; height: 14px; }
+  .officer .boat-policy select { font-size: .74rem; padding: 1px 4px; }
+}
+@media (max-width: 1499px) and (min-width: 700px) and (min-height: 601px) {
+  .officer .panel-head h2 { white-space: nowrap; }
+  .officer table.events th, .officer table.events td { white-space: nowrap; }
+  .officer table.events th:nth-child(4), .officer table.events td:nth-child(4) { display: none; }
+  .officer table.events .btn.small { padding: 1px 6px; font-size: .76rem; }
+}
+@media (max-width: 1499px) and (min-width: 700px) and (min-height: 601px) {
+  .officer .boat-card { grid-template-columns: auto minmax(0, 1fr); }
+  .officer .contact { padding: 4px 8px; font-size: .78rem; line-height: 1.3; }
+  .officer .verdict-q { font-size: .8rem; margin: 0 0 3px; }
+  .officer .verdict-actions { gap: 4px; }
+  .officer .check-list { font-size: .78rem; }
+}
