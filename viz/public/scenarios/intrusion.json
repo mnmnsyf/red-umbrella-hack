@@ -1,0 +1,78 @@
+{
+  "title": "Unknown object in the harbor",
+  "duration": 335,
+  "vMax": 2.5,
+  "tHuman": 30,
+  "acts": [
+    { "id": 1, "name": "Quiet harbor", "start": 0,   "end": 42,  "rate": 4 },
+    { "id": 2, "name": "Detect",       "start": 42,  "end": 50,  "rate": 1 },
+    { "id": 3, "name": "Locate",       "start": 50,  "end": 75,  "rate": 1 },
+    { "id": 4, "name": "Inspect",      "start": 75,  "end": 255, "rate": 3 },
+    { "id": 5, "name": "Handoff",      "start": 255, "end": 275, "rate": 1, "pauseAt": 255 },
+    { "id": 6, "name": "Reveal",       "start": 275, "end": 335, "rate": 1 }
+  ],
+  "hydrophones": [
+    { "id": "H1", "pos": [-600, -35, 400] },
+    { "id": "H2", "pos": [500, -30, -500] },
+    { "id": "H3", "pos": [-100, -38, -700] }
+  ],
+  "zones": [
+    { "name": "Ferry terminal", "min": [-450, 200], "max": [-150, 400] }
+  ],
+  "intruder": {
+    "visibleFrom": 42,
+    "path": [
+      { "t": 0,   "pos": [300, -14, -500] },
+      { "t": 75,  "pos": [150, -13, -300] },
+      { "t": 255, "pos": [-50, -12, -50] },
+      { "t": 335, "pos": [-70, -12, -70] }
+    ]
+  },
+  "droneBoat": {
+    "path": [
+      { "t": 0,   "pos": [-800, 0, -200] },
+      { "t": 80,  "pos": [-800, 0, -200] },
+      { "t": 235, "pos": [-90, 0, -80] },
+      { "t": 255, "pos": [-90, 0, -80] },
+      { "t": 285, "pos": [-60, 0, -60] },
+      { "t": 335, "pos": [-60, 0, -60] }
+    ]
+  },
+  "surfaceBoats": [
+    { "id": "ferry-1", "path": [ { "t": 0, "pos": [900, 0, 300] }, { "t": 335, "pos": [-300, 0, 300] } ] },
+    { "id": "ferry-2", "path": [ { "t": 0, "pos": [-300, 0, 250] }, { "t": 335, "pos": [900, 0, 250] } ] }
+  ],
+  "events": [
+    { "t": 42,   "type": "phase", "phase": "DETECT" },
+    { "t": 42.0, "type": "hear", "hydrophone": "H2" },
+    { "t": 42.4, "type": "hear", "hydrophone": "H3" },
+    { "t": 42.7, "type": "hear", "hydrophone": "H1" },
+    { "t": 46,   "type": "label", "text": "Unusual acoustic event · score 12.2" },
+    { "t": 50,   "type": "phase", "phase": "LOCATE" },
+    { "t": 50,   "type": "bearings", "noiseDeg": 3 },
+    { "t": 58,   "type": "estimate", "pos": [180, -13, -340], "radius": 90, "shrinkTo": 30, "shrinkDur": 15 },
+    { "t": 75,   "type": "phase", "phase": "INSPECT" },
+    { "t": 75,   "type": "action", "text": "Dispatch drone boat to observe", "mode": "auto" },
+    { "t": 235,  "type": "action", "text": "Hold 50 m stand-off", "mode": "auto" },
+    { "t": 237,  "type": "scan", "dur": 15, "result": "undetermined" },
+    { "t": 253,  "type": "label", "text": "Scan: undetermined" },
+    { "t": 255,  "type": "phase", "phase": "HANDOFF" },
+    { "t": 255,  "type": "banner", "text": "HANDOFF → Officer", "style": "handoff" },
+    { "t": 255,  "type": "action", "text": "Approach to 10 m for close scan — needs officer", "mode": "approval" },
+    { "t": 255,  "type": "action", "text": "Broadcast to harbor traffic — needs officer", "mode": "approval" },
+    { "t": 275,  "type": "action", "text": "Close scan approved by officer", "mode": "approved" },
+    { "t": 287,  "type": "scan", "dur": 12, "result": "identified" },
+    { "t": 300,  "type": "reveal", "text": "Research AUV · Harbor Ocean Lab · lost 2 days" },
+    { "t": 315,  "type": "endcard", "lines": ["Lost research vehicle found.", "Owner notified. Port never closed."] }
+  ],
+  "camera": [
+    { "t": 0,   "pos": [0, 700, 1300],    "target": [0, 0, 0],        "dur": 0 },
+    { "t": 42,  "pos": [300, 150, 400],   "target": [0, -100, -300],  "dur": 4 },
+    { "t": 50,  "pos": [200, 500, 400],   "target": [100, -60, -250], "dur": 3 },
+    { "t": 75,  "pos": [-500, 250, 300],  "target": [-200, 0, -150],  "dur": 4 },
+    { "t": 235, "pos": [-160, 40, 60],    "target": [-50, -48, -50],  "dur": 3 },
+    { "t": 255, "pos": [-250, 200, 200],  "target": [-100, -40, 0],   "dur": 3 },
+    { "t": 287, "pos": [-100, -20, 0],    "target": [-60, -48, -60],  "dur": 3 },
+    { "t": 315, "pos": [0, 600, 1100],    "target": [0, 0, 0],        "dur": 5 }
+  ]
+}

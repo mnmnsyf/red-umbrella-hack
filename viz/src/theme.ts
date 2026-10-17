@@ -1,4 +1,5 @@
 export const VEXAG = 4;
+export const SCENE_SIZE = 2400;
 
 export const COLORS = {
   background: '#06121f',
