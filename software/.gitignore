@@ -1,0 +1,6 @@
+# Generated on first run (simulated sample audio ~400 MB, feature cache, trained model)
+data/
+models/
+.venv/
+__pycache__/
+.pytest_cache/
