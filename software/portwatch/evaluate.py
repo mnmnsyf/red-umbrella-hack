@@ -19,7 +19,7 @@ Array sessions (simulated 4-hydrophone array) additionally run the full live
 loop (``StreamProcessor`` with precomputed scores: same alert, location and
 dispatch code) with auto-dispatch and a simulated officer who confirms a
 sonar contact and otherwise records "nothing found":
-- Location error of each detected event (10 s after the alert) and whether
+- Location error of each detected event (best fix, 10 s after the alert) and whether
   the truth lay inside the stated 95% area.
 - Inspection sorties per hour, sorties on false alerts, events reached
   (sonar contact) and time from event start to contact.
@@ -170,6 +170,7 @@ def _response_eval(bundle: ModelBundle, sessions: list[dict], method: str, sensi
             if hit and hit["id"] in loc_at:
                 t_want = hit["alert_time"] + 10
                 t, est = min(loc_at[hit["id"]], key=lambda z: abs(z[0] - t_want))
+                est = dict(est, **{k: est["best"][k] for k in ("x", "y")}) if est.get("best") else est  # the fix the boat uses
                 tx, ty = position(lab["track"], t - 1)
                 err = float(np.hypot(est["x"] - tx, est["y"] - ty))
                 row.update(loc_error_m=round(err), inside_95=err <= est["r95"], loc_mode=est.get("mode"))
@@ -247,7 +248,7 @@ def evaluate(bundle: ModelBundle, test_entries: list[dict], sensitivity: float =
             speed_acc[m][0] += f["secs"][m]
             speed_acc[m][1] += f["n"] * f["channels"]
         sessions.append({"session": e["session"], "source": e["source"], "duration": f["audio_s"], "labels": e.get("labels"),
-                         "scores": scores, "ch_scores": ch, "array": f["channels"] == 4, "path": e["path"], "scene": e.get("scene")})
+                         "scores": scores, "ch_scores": ch, "array": f["channels"] > 1, "path": e["path"], "scene": e.get("scene")})
 
     report = {
         "generated": time.strftime("%Y-%m-%d %H:%M:%S"),

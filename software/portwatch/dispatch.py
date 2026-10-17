@@ -99,7 +99,7 @@ class SceneTruth:
 class DispatchPolicy:
     auto: bool = True
     cancel_s: float = 15.0          # officer cancel window (feed seconds)
-    max_r95_m: float = 250.0        # don't auto-launch on a location vaguer than this
+    max_r95_m: float = 350.0        # don't auto-launch on a location vaguer than this
     ais_radius_m: float = 75.0      # AIS vessel this close to the estimate explains the sound
     verdict_timeout_s: float = 120.0
     inspect_s: float = 20.0         # time spent observing after a sonar contact
@@ -134,7 +134,7 @@ def _spiral(cx: float, cy: float, radius: float, spacing: float) -> list[tuple[f
     while b * th <= radius:
         r = b * th
         x, y = cx + r * np.cos(th), cy + r * np.sin(th)
-        if H.point_in_poly(x, y, H.PATROL):
+        if H.in_water(x, y):
             pts.append((float(x), float(y)))
         th += max(0.3, 20.0 / max(r, 20.0))
     return pts or [(cx, cy)]
@@ -169,6 +169,8 @@ class Boat:
     sorties: list = field(default_factory=list)
     handled: set = field(default_factory=set)
     trail: list = field(default_factory=list)
+    path: list = field(default_factory=list)      # planned water route to the current destination
+    path_goal: tuple | None = None
     _cmd: list = field(default_factory=list)
     state_since: float = 0.0
 
@@ -181,6 +183,25 @@ class Boat:
 
     def _set(self, state: str, t: float) -> None:
         self.state, self.state_since = state, t
+
+    def _travel(self, tx: float, ty: float, speed: float, dt: float) -> float:
+        """Follow a water route (around piers and land) to (tx, ty). Returns remaining distance."""
+        if self.path_goal is None or np.hypot(tx - self.path_goal[0], ty - self.path_goal[1]) > 15:
+            self.path = H.route((self.x, self.y), (tx, ty))
+            self.path_goal = (tx, ty)
+        budget = speed * dt
+        while self.path and budget > 0:
+            wx, wy = self.path[0]
+            d = float(np.hypot(wx - self.x, wy - self.y))
+            if d <= budget:
+                self.x, self.y = wx, wy
+                budget -= d
+                self.path.pop(0)
+            else:
+                self._move_to(wx, wy, budget / dt, dt)
+                budget = 0
+        left = [(self.x, self.y), *self.path]
+        return float(sum(np.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(left[:-1], left[1:])))
 
     def _move_to(self, tx: float, ty: float, speed: float, dt: float) -> float:
         dx, dy = tx - self.x, ty - self.y
@@ -246,7 +267,7 @@ class Boat:
         if self.state == "en_route":
             if loc is not None and event is not None and event["id"] == self.event_id:
                 self.target = self._search_point(loc)  # follow the best fix as evidence accumulates
-            rem = self._move_to(self.target["x"], self.target["y"], H.USV_SPEED, dt)
+            rem = self._travel(self.target["x"], self.target["y"], H.USV_SPEED, dt)
             if rem < 5:
                 self.sortie["on_scene_at"] = round(t, 1)
                 radius = max(self.target["r95"], 60.0)
@@ -254,7 +275,7 @@ class Boat:
                 self._set("searching", t)
         elif self.state == "searching":
             if self.waypoints:
-                if self._move_to(*self.waypoints[0], H.USV_SEARCH_SPEED, dt) < 2:
+                if self._travel(*self.waypoints[0], H.USV_SEARCH_SPEED, dt) < 2:
                     self.waypoints.pop(0)
             hits = truth.sonar(self.x, self.y, t)
             if hits:
@@ -284,7 +305,7 @@ class Boat:
             if self.state == "awaiting_verdict" and t - self.state_since >= p.verdict_timeout_s:
                 self._finish(t, "no verdict recorded")
         elif self.state == "returning":
-            if self._move_to(*H.USV_DOCK, H.USV_SPEED, dt) < 2:
+            if self._travel(*H.USV_DOCK, H.USV_SPEED, dt) < 2:
                 self.sortie["back_at"] = round(t, 1)
                 self.sorties.append(self.sortie)
                 self.sortie, self.target, self.event_id, self.contact = None, None, None, None
@@ -313,6 +334,7 @@ class Boat:
             "pending_left_s": round(max(0.0, self.pending_until - t), 1) if self.state == "pending" else None,
             "eta_s": eta,
             "waypoints": [[round(a, 1), round(b, 1)] for a, b in self.waypoints[:200]],
+            "path": [[round(a, 1), round(b, 1)] for a, b in self.path[:60]],
             "trail": self.trail[-120:],
             "contact": self.contact,
             "camera": self.camera,

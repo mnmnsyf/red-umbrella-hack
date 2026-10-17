@@ -88,7 +88,7 @@ def small_bundle(tmp_path_factory):
     d = tmp_path_factory.mktemp("sim")
     entries = []
     for i, role in enumerate(["train", "train", "train", "calibration"]):
-        x, _, _ = render_session(SessionPlan(f"s{i}", role, 40, 77 + i, channels=[i % 4] if role == "train" else [0, 1, 2, 3]))
+        x, _, _ = render_session(SessionPlan(f"s{i}", role, 40, 77 + i, channels=[i % 6] if role == "train" else list(range(6))))
         p = d / f"s{i}.wav"
         save_wav(p, x)
         entries.append({"path": str(p), "session": f"s{i}", "source": "simulated", "role": role})
@@ -120,7 +120,7 @@ def test_localiser_finds_isolated_source():
 
     srcs, amb = S.build_scene(40, 4001, [{"type": "uuv", "start": 5, "dur": 30, "snr_db": 12}])
     srcs = [s for s in srcs if s.event]
-    x = S.render(srcs, amb, 40, [0, 1, 2, 3], 4001)
+    x = S.render(srcs, amb, 40, list(range(6)), 4001)
     tr = EventTrack(Localizer())
     est = None
     for t in np.arange(6, 30, 0.5):

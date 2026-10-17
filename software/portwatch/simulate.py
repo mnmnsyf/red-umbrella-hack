@@ -4,8 +4,9 @@ Everything produced here is synthetic and labelled ``source="simulated"``.
 It exists so the demo works without real recordings; results on it say
 nothing about real-world performance.
 
-Each session is a *scene*: sound sources with position tracks in the
-simulated harbour (``harbour.py``). Each source's sound reaches each
+Each session is a *scene*: sound sources with position tracks in a section
+of the Port of Los Angeles traced from aerial imagery (``harbour.py``), with
+a simulated 6-hydrophone array. Tracks follow real water routes. Each source's sound reaches each
 hydrophone after the acoustic travel time and with spherical spreading loss
 (amplitude ~ 1/r), so moving sources also produce natural Doppler shift.
 Ambient sea noise and snapping shrimp are local to each hydrophone.
@@ -195,11 +196,36 @@ def _path(points: list[tuple[float, float]], speed: float, t0: float) -> list:
     return out
 
 
-def _random_basin_point(rng, margin=40.0):
-    while True:
-        x, y = rng.uniform(H.PATROL_BBOX[0], H.PATROL_BBOX[2]), rng.uniform(H.PATROL_BBOX[1], H.PATROL_BBOX[3])
-        if H.point_in_poly(x, y, H.PATROL) and y < H.QUAY_Y - margin and x > 80 + margin and x < 1150 - margin:
-            return float(x), float(y)
+_CELLS = H.water_grid(10.0)
+_OPEN = np.array([H.clearance(x, y) >= 40 for x, y in _CELLS])
+_CENTRE = _CELLS[_OPEN].mean(axis=0)
+# far out at sea beyond the map, then the real approach past the mole tip into the basin
+SEA_ROUTE = [(H.ENTRY_ROUTE[0][0] + 300.0, H.ENTRY_ROUTE[0][1] - 1500.0), *H.ENTRY_ROUTE]
+
+
+def _random_basin_point(rng) -> tuple[float, float]:
+    """Random open-water point in the patrol basin (>= 40 m from land)."""
+    x, y = _CELLS[_OPEN][rng.integers(0, int(_OPEN.sum()))]
+    return float(x), float(y)
+
+
+def _into_basin(p, dist: float) -> tuple[float, float]:
+    """Point ``dist`` metres from p towards the basin centre (e.g. a berth's approach point)."""
+    d = _CENTRE - np.asarray(p)
+    d = d / (np.linalg.norm(d) + 1e-9)
+    return float(p[0] + d[0] * dist), float(p[1] + d[1] * dist)
+
+
+def _water_path(points: list) -> list[tuple[float, float]]:
+    """Chain of points where each leg inside the basin follows a water route."""
+    out = [tuple(points[0])]
+    for a, b in zip(points[:-1], points[1:]):
+        out += H.route(a, b) if H.in_water(*a) and H.in_water(*b) else [tuple(b)]
+    return out
+
+
+def _path_len(pts) -> float:
+    return float(sum(np.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(pts[:-1], pts[1:])))
 
 
 def build_scene(duration: float, seed: int, events: list[dict]) -> tuple[list[Source], float]:
@@ -210,58 +236,62 @@ def build_scene(duration: float, seed: int, events: list[dict]) -> tuple[list[So
     m = int(duration * SR) + PADS
     sources: list[Source] = []
     names_s, names_c = list(rng.permutation(SHIP_NAMES)), list(rng.permutation(CRAFT_NAMES))
+    nb = len(H.BERTHS)
 
     def add(kind, track, amp, t_on, t_off, sig, **kw):
         sources.append(Source(kind, track, float(amp), float(t_on), float(t_off), sig=sig, **kw))
 
-    # large vessels: entrance <-> berth
+    # large vessels: open sea <-> berth, through the real entrance
     for _ in range(rng.poisson(duration / 160) + (1 if rng.random() < 0.5 else 0)):
-        bx, by = H.BERTHS[rng.integers(0, 4)]
-        pts = [(rng.uniform(320, 380), -1500.0), (380.0, 0.0), (430.0, 200.0), (bx, by - 80), (bx, by)]
+        berth = H.BERTHS[rng.integers(0, nb)]
+        pts = SEA_ROUTE + _water_path([H.BASIN_MOUTH, _into_basin(berth, 120), berth])[1:]
         if rng.random() < 0.5:
             pts = pts[::-1]
         speed = rng.uniform(2.5, 4.0)
-        L = sum(np.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(pts[:-1], pts[1:]))
-        t0 = rng.uniform(-L / speed + 60, duration - 60)
+        t0 = rng.uniform(-_path_len(pts) / speed + 60, duration - 60)
         tr = _path(pts, speed, t0)
         add("large vessel", tr, amb * 10 ** (rng.uniform(14, 24) / 20) * 200, tr[0][0], tr[-1][0], vessel_signal(m, srng, False),
             ais={"name": names_s.pop(), "type": "cargo"})
-    # small craft: point to point in the basin, sometimes via the entrance
+    # small craft: basin point to point, sometimes to/from sea
     for _ in range(rng.poisson(duration / 90)):
-        a = _random_basin_point(rng) if rng.random() < 0.7 else (350.0, -600.0)
-        b = _random_basin_point(rng) if rng.random() < 0.7 else (350.0, -600.0)
-        if a == b:
-            continue
-        pts = [a, _random_basin_point(rng), b]
+        legs = [_random_basin_point(rng) for _ in range(3)]
+        if rng.random() < 0.3:
+            pts = SEA_ROUTE + _water_path([H.BASIN_MOUTH, *legs[1:]])[1:]
+        else:
+            pts = _water_path(legs)
+        if rng.random() < 0.5:
+            pts = pts[::-1]
         speed = rng.uniform(5, 10)
-        L = sum(np.hypot(q[0] - p[0], q[1] - p[1]) for p, q in zip(pts[:-1], pts[1:]))
-        t0 = rng.uniform(-L / speed + 20, duration - 20)
+        t0 = rng.uniform(-_path_len(pts) / speed + 20, duration - 20)
         tr = _path(pts, speed, t0)
         ais = {"name": names_c.pop(), "type": "small craft"} if rng.random() < 0.4 and names_c else None
         add("small craft", tr, amb * 10 ** (rng.uniform(8, 16) / 20) * 100, tr[0][0], tr[-1][0], vessel_signal(m, srng, True), ais=ais)
-    # quay pump hum, chain/hull clanks at berths
-    hx = rng.uniform(250, 1050)
-    add("quay pump", [[0, hx, H.QUAY_Y - 5]], amb * rng.uniform(0.1, 0.5) * 150, -PAD_S, duration + 10, hum_signal(m, srng))
+    # quay pump hum (on the quay behind a berth), chain/hull clanks at berths
+    px, py = _into_basin(H.BERTHS[rng.integers(0, nb)], -40)
+    add("quay pump", [[0, px, py]], amb * rng.uniform(0.1, 0.5) * 150, -PAD_S, duration + 10, hum_signal(m, srng))
     for _ in range(rng.integers(1, 3)):
-        bx, by = H.BERTHS[rng.integers(0, 4)]
-        add("berth clank", [[0, bx + rng.uniform(-40, 40), by]], amb * rng.uniform(1, 3) * 100, -PAD_S, duration + 10, clank_signal(m, srng, duration))
-    # unusual events
+        bx, by = H.BERTHS[rng.integers(0, nb)]
+        add("berth clank", [[0, bx + rng.uniform(-40, 40), by + rng.uniform(-10, 10)]], amb * rng.uniform(1, 3) * 100,
+            -PAD_S, duration + 10, clank_signal(m, srng, duration))
+    # unusual events: approach a berth through open water
     for ev in events:
+        berth = H.BERTHS[rng.integers(0, nb)]
         if ev["type"] == "uuv":
-            bx, by = H.BERTHS[rng.integers(0, 4)]
-            speed = rng.uniform(1.2, 2.0)
-            ang = np.arctan2(by - 400, bx - 600) + rng.uniform(-0.5, 0.5)
-            # start so it travels towards the berth during the event
-            sx = float(np.clip(bx - np.cos(ang) * speed * ev["dur"] * 1.3, 140, 1100))
-            sy = float(np.clip(by - 30 - np.sin(ang) * speed * ev["dur"] * 1.3, 220, 620))
-            tr = _path([(sx, sy), (bx, by - 30)], speed, ev["start"])
-            amp, sig = amb * 10 ** (ev["snr_db"] / 20) * 100, uuv_signal(m, srng)
+            speed, dist, ref, sig = rng.uniform(1.2, 2.0), None, 100.0, uuv_signal(m, srng)
+            dist = speed * ev["dur"] * 1.3
         else:
-            bx, by = H.BERTHS[rng.integers(0, 4)]
-            sx, sy = bx + rng.uniform(-120, 120), by - rng.uniform(60, 160)
-            tr = _path([(sx, sy), (bx + rng.uniform(-20, 20), by - 15)], rng.uniform(0.4, 0.7), ev["start"])
-            amp, sig = amb * 10 ** (ev["snr_db"] / 20) * 50, diver_signal(m, srng)
-        add(ev["type"], tr, amp, ev["start"], ev["start"] + ev["dur"], sig, underwater=True, event=True)
+            speed, ref, sig = rng.uniform(0.4, 0.7), 50.0, diver_signal(m, srng)
+            dist = rng.uniform(60, 160)
+        start = None
+        for _ in range(200):
+            ang = rng.uniform(0, 2 * np.pi)
+            cand = (berth[0] + np.cos(ang) * dist, berth[1] + np.sin(ang) * dist)
+            if H.in_water(*cand) and H.clearance(*cand) >= 30 and H.line_clear(cand, berth):
+                start = (float(cand[0]), float(cand[1]))
+                break
+        start = start or _into_basin(berth, dist)
+        tr = _path([start, berth], speed, ev["start"])
+        add(ev["type"], tr, amb * 10 ** (ev["snr_db"] / 20) * ref, ev["start"], ev["start"] + ev["dur"], sig, underwater=True, event=True)
     return sources, amb
 
 
@@ -308,7 +338,7 @@ class SessionPlan:
     duration: float
     seed: int
     events: list[dict] = field(default_factory=list)
-    channels: list[int] = field(default_factory=lambda: [0, 1, 2, 3])
+    channels: list[int] = field(default_factory=lambda: list(range(H.N_HYD)))
 
 
 def render_session(plan: SessionPlan) -> tuple[np.ndarray, list[dict], dict]:
@@ -322,7 +352,7 @@ def render_session(plan: SessionPlan) -> tuple[np.ndarray, list[dict], dict]:
 
 
 def default_plans() -> list[SessionPlan]:
-    plans = [SessionPlan(f"sim-train-{i + 1:02d}", "train", 150, 1000 + i, channels=[i % 4]) for i in range(12)]
+    plans = [SessionPlan(f"sim-train-{i + 1:02d}", "train", 150, 1000 + i, channels=[i % H.N_HYD]) for i in range(12)]
     plans += [SessionPlan(f"sim-cal-{i + 1:02d}", "calibration", 150, 2000 + i) for i in range(4)]
     plans += [SessionPlan(f"sim-test-normal-{i + 1:02d}", "test", 180, 3000 + i) for i in range(6)]
     # unusual events; snr_db = event level vs session ambient at 100 m (uuv) / 50 m (diver)

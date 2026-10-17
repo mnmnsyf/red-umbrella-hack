@@ -174,7 +174,7 @@ async function startReplay(recId, seekTo = 0) {
   document.body.dataset.level = "0";
   $("threatWord").textContent = "NORMAL";
   $("threatSummary").textContent = "Listening. The first score arrives after one second of audio.";
-  $("mapHint").textContent = info.array ? `Simulated harbour, ${info.channels}-hydrophone array.` : "Single hydrophone: no location or dispatch for this recording.";
+  $("mapHint").textContent = info.array ? `Port of Los Angeles, Terminal Island basin. Simulated ${info.channels}-hydrophone array.` : "Single hydrophone: no location or dispatch for this recording.";
   renderEvents(); updateAlertCard(); drawSpec(); drawScore(); drawCompare(); drawMap(); updateBoat();
 
   const a = $("feedAudio");
@@ -649,58 +649,67 @@ window.addEventListener("resize", () => { drawSpec(); drawScore(); drawCompare()
 function drawMap() {
   const svg = $("mapSvg"), H = S.harbour;
   if (!H) return;
-  const [x0, y0, x1, y1] = H.bounds;
-  const P = (x, y) => [(x - x0).toFixed(1), (y1 - y).toFixed(1)];
+  const [bx0, by0, bx1, by1] = H.bounds;
+  // frame the patrol basin, expanded to the panel's aspect ratio, clamped to the image
+  const px = H.patrol.map((p) => p[0]), py = H.patrol.map((p) => p[1]);
+  let vx0 = Math.min(...px) - 120, vx1 = Math.max(...px) + 120, vy0 = Math.min(...py) - 120, vy1 = Math.max(...py) + 120;
+  const aspect = (svg.clientWidth || 1000) / (svg.clientHeight || 500);
+  if ((vx1 - vx0) / (vy1 - vy0) < aspect) { const w = (vy1 - vy0) * aspect, c = (vx0 + vx1) / 2; vx0 = c - w / 2; vx1 = c + w / 2; }
+  else { const h = (vx1 - vx0) / aspect, c = (vy0 + vy1) / 2; vy0 = c - h / 2; vy1 = c + h / 2; }
+  const shift = (a0, a1, lo, hi) => (a0 < lo ? [lo, a1 + lo - a0] : a1 > hi ? [a0 - (a1 - hi), hi] : [a0, a1]);
+  [vx0, vx1] = shift(vx0, vx1, bx0, bx1); [vy0, vy1] = shift(vy0, vy1, by0, by1);
+  const P = (x, y) => [+(x - bx0).toFixed(1), +(by1 - y).toFixed(1)];  // numbers, so offsets add rather than concatenate
   const pts = (poly) => poly.map(([x, y]) => P(x, y).join(",")).join(" ");
-  svg.setAttribute("viewBox", `0 0 ${x1 - x0} ${y1 - y0}`);
+  svg.setAttribute("viewBox", `${vx0 - bx0} ${by1 - vy1} ${vx1 - vx0} ${vy1 - vy0}`);
   svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  const k = (vx1 - vx0) / (svg.clientWidth || 1000);  // metres per screen pixel: marker sizes below are in pixels
+  svg.style.fontSize = `${14 * k}px`;
   const M = S.map, out = [];
-  out.push(`<polygon class="water" points="${pts(H.water)}"/>`);
+  out.push(`<image href="${H.basemap.url}" x="0" y="0" width="${bx1 - bx0}" height="${by1 - by0}" preserveAspectRatio="none"/>`);
+  out.push(`<rect class="dim" x="0" y="0" width="${bx1 - bx0}" height="${by1 - by0}"/>`);
   out.push(`<polygon class="patrol" points="${pts(H.patrol)}"/>`);
-  out.push(`<line class="quay" x1="${P(80, H.quay_y)[0]}" y1="${P(80, H.quay_y)[1]}" x2="${P(1150, H.quay_y)[0]}" y2="${P(1150, H.quay_y)[1]}"/>`);
-  H.berths.forEach(([bx, by], i) => { const [x, y] = P(bx, by); out.push(`<rect class="berth" x="${x - 30}" y="${y - 6}" width="60" height="12" rx="3"/><text x="${x - 14}" y="${y - 14}">B${i + 1}</text>`); });
-  out.push(`<text x="${P(370, 80)[0]}" y="${P(370, 80)[1]}">To entrance</text>`);
+  H.berths.forEach(([x0, y0], i) => { const [x, y] = P(x0, y0); out.push(`<text class="lbl" x="${x - 20 * k}" y="${y - 16 * k}">Berth ${i + 1}</text>`); });
   const [dx, dy] = P(...H.dock);
-  out.push(`<rect class="dock" x="${dx - 12}" y="${dy - 12}" width="24" height="24" rx="4"/><text x="${dx - 50}" y="${dy + 46}">Boat dock</text>`);
-  // 100 m scale bar
-  out.push(`<line class="scale" x1="40" y1="${y1 - y0 - 30}" x2="140" y2="${y1 - y0 - 30}"/><text x="58" y="${y1 - y0 - 40}">100 m</text>`);
+  out.push(`<rect class="dock" x="${dx - 10 * k}" y="${dy - 10 * k}" width="${20 * k}" height="${20 * k}" rx="${3 * k}"/><text class="lbl" x="${dx + 16 * k}" y="${dy + 8 * k}">Boat dock</text>`);
+  // 500 m scale bar + imagery credit (bottom-left of view)
+  const sx = vx0 - bx0 + 30 * k, sy = by1 - vy0 - 24 * k;
+  out.push(`<line class="scale" x1="${sx}" y1="${sy}" x2="${sx + 500}" y2="${sy}"/><text class="lbl" x="${sx}" y="${sy - 10 * k}">500 m</text>`);
+  out.push(`<text class="credit" x="${vx1 - bx0 - 8 * k}" y="${by1 - vy0 - 10 * k}" text-anchor="end">${esc(H.basemap.credit)}. Port of Los Angeles; array, vessels and boat simulated.</text>`);
   // estimated source
-  const loc = M?.location;
+  const loc0 = M?.location;
+  const loc = loc0 && loc0.best ? { ...loc0, x: loc0.best.x, y: loc0.best.y } : loc0;  // show the fix the boat uses
   if (loc) {
     const [lx, ly] = P(loc.x, loc.y);
     out.push(`<ellipse class="loc" cx="${lx}" cy="${ly}" rx="${loc.major}" ry="${loc.minor}" transform="rotate(${-loc.angle_deg} ${lx} ${ly})"/>`);
-    out.push(`<path class="loc-c" d="M${lx - 12} ${ly}h24M${lx} ${ly - 12}v24"/>`);
-    if (loc.best && (loc.best.x !== loc.x || loc.best.y !== loc.y)) { const [bx, by] = P(loc.best.x, loc.best.y); out.push(`<circle class="best" cx="${bx}" cy="${by}" r="10"/>`); }
+    out.push(`<path class="loc-c" d="M${lx - 12 * k} ${ly}h${24 * k}M${lx} ${ly - 12 * k}v${24 * k}"/>`);
   }
-  // boat's search area stays visible after the sound stops
   const tg = M?.boat?.target;
   if (!loc && tg && M.boat.state !== "docked") { const [gx, gy] = P(tg.x, tg.y); out.push(`<circle class="loc" cx="${gx}" cy="${gy}" r="${Math.max(tg.r95, 60)}" opacity=".6"/>`); }
-  // hydrophones with glow from the active method's per-hydrophone score
+  // hydrophones, glowing with the active method's per-hydrophone score
   const f = S.frames[S.frames.length - 1];
   const thr = S.thresholds[S.method] || 1;
   H.hydrophones.forEach((h, i) => {
     const [hx, hy] = P(h.x, h.y);
     const z = f?.ch_scores?.[S.method]?.[i];
-    const k = z == null || !S.stream?.array ? 0 : Math.max(0, Math.min(1.5, z / thr));
-    if (k > 0.5) out.push(`<circle class="hyd-glow" cx="${hx}" cy="${hy}" r="${16 + 30 * k}" opacity="${(0.15 + 0.35 * (k - 0.5)).toFixed(2)}"/>`);
-    out.push(`<circle class="hyd" cx="${hx}" cy="${hy}" r="11"/><text x="${hx + 16}" y="${hy + 7}">${h.id}</text>`);
+    const g = z == null || !S.stream?.array ? 0 : Math.max(0, Math.min(1.5, z / thr));
+    if (g > 0.5) out.push(`<circle class="hyd-glow" cx="${hx}" cy="${hy}" r="${(16 + 30 * g) * k}" opacity="${(0.25 + 0.4 * (g - 0.5)).toFixed(2)}"/>`);
+    out.push(`<circle class="hyd" cx="${hx}" cy="${hy}" r="${9 * k}"/><text class="lbl" x="${hx + 13 * k}" y="${hy + 7 * k}">${h.id}</text>`);
   });
   // AIS vessels
   for (const v of M?.ais || []) {
     const [vx, vy] = P(v.x, v.y);
-    out.push(`<path class="ais" d="M0 -18 L10 12 L0 6 L-10 12 Z" transform="translate(${vx} ${vy}) rotate(${v.course})"/><text class="ais-label" x="${+vx + 14}" y="${+vy - 10}">${esc(v.name)}</text>`);
+    out.push(`<path class="ais" d="M0 ${-18 * k} L${10 * k} ${12 * k} L0 ${6 * k} L${-10 * k} ${12 * k} Z" transform="translate(${vx} ${vy}) rotate(${v.course})"/><text class="lbl ais-label" x="${+vx + 14 * k}" y="${+vy - 10 * k}">${esc(v.name)}</text>`);
   }
-  // ground truth (analyst toggle)
-  if (S.showTruth) for (const tr of M?.truth || []) { const [tx, ty] = P(tr.x, tr.y); out.push(`<rect class="truth" x="${tx - 9}" y="${ty - 9}" width="18" height="18" transform="rotate(45 ${tx} ${ty})"/>`); }
+  if (S.showTruth) for (const tr of M?.truth || []) { const [tx, ty] = P(tr.x, tr.y); out.push(`<rect class="truth" x="${tx - 9 * k}" y="${ty - 9 * k}" width="${18 * k}" height="${18 * k}" transform="rotate(45 ${tx} ${ty})"/>`); }
   // boat
   const b = M?.boat;
   if (b && b.state !== "docked") {
     if (b.trail.length > 1) out.push(`<polyline class="trail" points="${b.trail.map(([x, y]) => P(x, y).join(",")).join(" ")}"/>`);
-    if (b.waypoints.length) out.push(`<polyline class="plan" points="${[[b.x, b.y], ...b.waypoints].map(([x, y]) => P(x, y).join(",")).join(" ")}"/>`);
-    else if (b.target && b.state === "en_route") { const [a1, a2] = P(b.x, b.y), [c1, c2] = P(b.target.x, b.target.y); out.push(`<line class="plan" x1="${a1}" y1="${a2}" x2="${c1}" y2="${c2}"/>`); }
-    const [bx, by] = P(b.x, b.y);
-    if (["searching", "inspecting", "awaiting_verdict"].includes(b.state)) out.push(`<circle class="sonar" cx="${bx}" cy="${by}" r="${H.sonar_range}"/>`);
-    out.push(`<path class="boat" d="M0 -20 L11 14 L0 8 L-11 14 Z" transform="translate(${bx} ${by}) rotate(${b.heading})"/>`);
+    const plan = [[b.x, b.y], ...(b.path || []), ...b.waypoints];
+    if (plan.length > 1) out.push(`<polyline class="plan" points="${plan.map(([x, y]) => P(x, y).join(",")).join(" ")}"/>`);
+    const [qx, qy] = P(b.x, b.y);
+    if (["searching", "inspecting", "awaiting_verdict"].includes(b.state)) out.push(`<circle class="sonar" cx="${qx}" cy="${qy}" r="${H.sonar_range}"/>`);
+    out.push(`<path class="boat" d="M0 ${-20 * k} L${11 * k} ${14 * k} L0 ${8 * k} L${-11 * k} ${14 * k} Z" transform="translate(${qx} ${qy}) rotate(${b.heading})"/>`);
   }
   svg.innerHTML = out.join("");
   $("truthLegend").hidden = $("truthLegendText").hidden = !S.showTruth;

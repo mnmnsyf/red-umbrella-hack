@@ -15,6 +15,7 @@ from pathlib import Path
 
 import numpy as np
 
+from . import harbour as H
 from .alerting import AlertEngine, AlertParams
 from .audio import WindowSpec, load_channels
 from .dispatch import Boat, DispatchPolicy, SceneTruth
@@ -139,7 +140,7 @@ class StreamProcessor:
         self.bundle = bundle
         self.audio = np.atleast_2d(audio)
         self.channels = self.audio.shape[0]
-        self.array = self.channels == 4
+        self.array = self.channels == H.N_HYD and self.channels > 1
         self.n_windows = SPEC.n_windows(self.audio.shape[1])
         self.next_i = 0
         self.active_method = active_method

@@ -27,7 +27,7 @@ LIBRARY = DATA / "library.json"
 MODEL_PATH = ROOT / "models" / "current.pkl"
 REPORT_DIR = ROOT / "reports"
 ROLES = ("train", "calibration", "test")
-SIM_VERSION = 3  # bump when the simulator changes: sample data is regenerated
+SIM_VERSION = 4  # bump when the simulator changes: sample data is regenerated
 
 _lock = threading.Lock()
 

@@ -10,11 +10,11 @@ A human-centered harbor response demo for the InnovateLA x Dual-Use Hackathon.
 | [`software/`](software/) | Decision logic, simulation, and evaluation |
 | [`docs/`](docs/) | Shared plan and presentation material |
 
-## Run the acoustic detection demo
+## Run the acoustic detection demo (Port of Los Angeles basin)
 
 ```bash
 cd software
-./start.sh        # first start ~3 min (generates simulated data, trains); then open http://localhost:8000
+./start.sh        # first start ~5 min (generates simulated data, trains); then open http://localhost:8000
 ```
 
 Needs [uv](https://docs.astral.sh/uv/). Full instructions and a demo script: [`software/README.md`](software/README.md).
