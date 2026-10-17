@@ -108,7 +108,7 @@ export default function TrackTrail({
         if (age < 0.0 || age > uTailDuration || vPathTime < uStart) discard;
         if (uDashed > 0.5 && mod(vDistance, 24.0) > 15.0) discard;
         float fade = 1.0 - smoothstep(0.0, uTailDuration, age);
-        gl_FragColor = vec4(uColor * 2.4, fade * uOpacity);
+        gl_FragColor = vec4(uColor, fade * uOpacity);
       }
     `,
     transparent: true,

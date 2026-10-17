@@ -23,7 +23,7 @@ export default function EstimateDisk({ position, startTime, t, radius, shrinkTo,
   return (
     <group position={scenePosition(position)} rotation-x={-Math.PI / 2} scale={[currentRadius, currentRadius, 1]}>
       <mesh geometry={circle} renderOrder={10}>
-        <meshBasicMaterial color={COLORS.acoustic} transparent opacity={0.07} depthTest={false} depthWrite={false} side={DoubleSide} toneMapped={false} />
+        <meshBasicMaterial color={COLORS.acoustic} transparent opacity={0.1} depthTest={false} depthWrite={false} side={DoubleSide} toneMapped={false} />
       </mesh>
       <mesh geometry={ring} renderOrder={10}>
         <meshBasicMaterial color={COLORS.acoustic} transparent opacity={0.8} depthTest={false} depthWrite={false} side={DoubleSide} toneMapped={false} />

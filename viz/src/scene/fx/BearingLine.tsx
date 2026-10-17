@@ -50,8 +50,8 @@ export default function BearingLine({ position, bearingDeg, length = 300, width 
       uniform float uOpacity;
       varying float vProgress;
       void main() {
-        float alpha = 0.8 * uOpacity * pow(1.0 - vProgress, 1.5);
-        gl_FragColor = vec4(uColor * 2.2, alpha);
+        float alpha = 0.8 * uOpacity * pow(max(1.0 - vProgress, 0.0), 1.5);
+        gl_FragColor = vec4(uColor, alpha);
       }
     `,
     transparent: true,

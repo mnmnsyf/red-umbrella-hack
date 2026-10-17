@@ -21,11 +21,11 @@ export default function Hydrophones() {
           <group key={hydrophone.id} position={[x, seabedY, z]}>
             <mesh position={[0, 4, 0]}>
               <cylinderGeometry args={[3, 4, 8, 12]} />
-              <meshStandardMaterial color={COLORS.acoustic} emissive={COLORS.acoustic} emissiveIntensity={0.5} />
+              <meshStandardMaterial color={COLORS.acoustic} roughness={0.5} />
             </mesh>
             <mesh position={[0, 5, 0]}>
               <sphereGeometry args={[9, 16, 12]} />
-              <meshBasicMaterial color={COLORS.acoustic} transparent opacity={0.1} depthWrite={false} />
+              <meshBasicMaterial color={COLORS.acoustic} transparent opacity={0.18} depthWrite={false} />
             </mesh>
           </group>
         );

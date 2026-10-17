@@ -31,6 +31,7 @@ export interface Scenario {
   tHuman: number;          // 值班员反应时间，秒
   hydrophones: Hydrophone[];
   zones: Zone[];
+  fish?: { center: Vec3; radiusXZ: number; radiusY: number; count: number; label: string };
   intruder: { path: Keyframe[]; visibleFrom: number };
   droneBoat: { path: Keyframe[] };
   surfaceBoats: { id: string; path: Keyframe[] }[];

@@ -3,7 +3,9 @@ import { headingAt, positionAt } from '../lib/interp';
 import { usePlaybackStore } from '../store';
 import { COLORS, VEXAG } from '../theme';
 import type { ScenarioEvent } from '../types';
+import Model, { MODEL_URLS } from './Model';
 import AlertMarker from './fx/AlertMarker';
+import ContactRings from './fx/ContactRings';
 import TrackTrail from './fx/TrackTrail';
 
 const TRAIL_SECONDS = 60;
@@ -32,9 +34,10 @@ export default function Intruder() {
         startTime={scenario.intruder.visibleFrom}
         tailDuration={TRAIL_SECONDS}
         color={COLORS.intruder}
-        opacity={reveal ? 0.5 : 0.25}
+        opacity={reveal ? 0.6 : 0.4}
         width={3}
       />
+      <ContactRings position={[x, y, z]} t={t} color={reveal ? COLORS.automatic : COLORS.protectedZone} />
       {estimate && !reveal && <AlertMarker position={[x, y, z]} t={t} startTime={estimate.t} radius={30} height={90} />}
       <group position={[x, y * VEXAG, z]} rotation-y={yaw}>
         {!reveal && (
@@ -48,30 +51,10 @@ export default function Intruder() {
             />
           </mesh>
         )}
-        <mesh rotation-z={Math.PI / 2} scale={3}>
-          <capsuleGeometry args={[0.8, 4.4, 4, 8]} />
-          <meshStandardMaterial
-            color={COLORS.intruder}
-            transparent={!reveal}
-            opacity={reveal ? 1 : 0.25}
-            depthWrite={Boolean(reveal)}
-            roughness={0.65}
-          />
-        </mesh>
+        <Model url={MODEL_URLS.auv} length={22} sink={0.5} opacity={reveal ? 1 : 0.55} />
         {reveal && (
-          <Html position={[0, 14, 0]} center>
-            <div
-              style={{
-                padding: '5px 8px',
-                border: `1px solid ${COLORS.neutral}`,
-                borderRadius: 5,
-                background: COLORS.background,
-                color: COLORS.intruder,
-                font: '12px Inter, system-ui, sans-serif',
-                whiteSpace: 'nowrap',
-                pointerEvents: 'none',
-              }}
-            >
+          <Html position={[0, 14, 0]} center zIndexRange={[10, 0]}>
+            <div className="scene-label callout" style={{ borderLeftColor: COLORS.automatic }}>
               {reveal.text}
             </div>
           </Html>

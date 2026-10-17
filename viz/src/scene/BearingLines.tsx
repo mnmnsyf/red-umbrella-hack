@@ -89,17 +89,8 @@ export default function BearingLines() {
         />
       )}
       {label && (
-        <Html position={[labelPosition[0], labelPosition[1] * VEXAG + 24, labelPosition[2]]} center>
-          <div style={{
-            padding: '5px 8px',
-            border: `1px solid ${COLORS.acoustic}`,
-            borderRadius: 5,
-            background: COLORS.background,
-            color: COLORS.neutral,
-            font: '12px Inter, system-ui, sans-serif',
-            whiteSpace: 'nowrap',
-            pointerEvents: 'none',
-          }}>
+        <Html position={[labelPosition[0], labelPosition[1] * VEXAG + 24, labelPosition[2]]} center zIndexRange={[10, 0]}>
+          <div className="scene-label callout">
             {label.text}
           </div>
         </Html>

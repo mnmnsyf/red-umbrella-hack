@@ -1,10 +1,13 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import Controls from './hud/Controls';
-import PhaseBar from './hud/PhaseBar';
+import Credits from './hud/Credits';
+import ThreatCard from './hud/ThreatCard';
 import ActionLog from './hud/ActionLog';
 import HandoffBanner from './hud/HandoffBanner';
 import EndCard from './hud/EndCard';
+import Countdown from './hud/Countdown';
+import Masthead from './hud/Masthead';
 import Environment from './scene/Environment';
 import PostFX from './scene/fx/PostFX';
 import SurfaceBoats from './scene/SurfaceBoats';
@@ -13,17 +16,27 @@ import Intruder from './scene/Intruder';
 import Hydrophones from './scene/Hydrophones';
 import BearingLines from './scene/BearingLines';
 import CameraDirector from './scene/CameraDirector';
+import ProtectedZones from './scene/ProtectedZones';
+import ReachRings from './scene/ReachRings';
+import WaterAtmosphere from './scene/WaterAtmosphere';
+import FishCloud from './scene/FishCloud';
 import { usePlaybackStore } from './store';
-import { COLORS } from './theme';
+import { preloadTextures } from './lib/textures';
+import { COLORS, TEXTURES } from './theme';
 import type { Scenario } from './types';
 
 const appColors = {
   '--color-background': COLORS.background,
+  '--color-paper': COLORS.paper,
+  '--color-ink': COLORS.ink,
+  '--color-line': COLORS.line,
   '--color-shallow-water': COLORS.shallowWater,
+  '--color-underwater-fog': COLORS.underwaterFog,
   '--color-neutral': COLORS.neutral,
   '--color-acoustic': COLORS.acoustic,
   '--color-automatic': COLORS.automatic,
   '--color-approval': COLORS.approval,
+  '--color-protected-zone': COLORS.protectedZone,
 } as CSSProperties;
 
 function Clock() {
@@ -33,7 +46,9 @@ function Clock() {
 }
 
 export default function App() {
+  const tintRef = useRef<HTMLDivElement>(null);
   const [loadError, setLoadError] = useState('');
+  const [texturesReady, setTexturesReady] = useState(false);
   const loadScenario = usePlaybackStore((state) => state.loadScenario);
   const openingShot = usePlaybackStore((state) => state.scenario?.camera[0]);
   const hudVisible = usePlaybackStore((state) => state.hudVisible);
@@ -60,6 +75,13 @@ export default function App() {
 
     return () => controller.abort();
   }, [loadScenario]);
+
+  useEffect(() => {
+    preloadTextures([
+      { url: TEXTURES.sand },
+      { url: TEXTURES.caustics, color: false },
+    ]).then(() => setTexturesReady(true));
+  }, []);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -93,33 +115,44 @@ export default function App() {
 
   return (
     <div className="app" style={appColors}>
-      {openingShot && (
+      {openingShot && texturesReady && (
         <Canvas
           className="scene"
-          camera={{ position: openingShot.pos, fov: 45, near: 1, far: 4000 }}
+          flat
+          dpr={[1, 2]}
+          camera={{ position: openingShot.pos, fov: 40, near: 1, far: 6000 }}
         >
-          <color attach="background" args={[COLORS.background]} />
           <Environment />
           <SurfaceBoats />
           <DroneBoat />
           <Intruder />
           <Hydrophones />
           <BearingLines />
+          <ProtectedZones />
+          <ReachRings />
+          <FishCloud />
           <PostFX />
           <Clock />
           <CameraDirector />
+          <WaterAtmosphere tintRef={tintRef} />
         </Canvas>
       )}
 
+      <div className="underwater-tint" ref={tintRef} aria-hidden="true" />
+
       {hudVisible && (
         <div className="hud" aria-label="Demo interface">
-          {loadError ? <div className="hud-panel phase-bar hud-error" role="alert">{loadError}</div> : <PhaseBar />}
+          <Masthead />
+          {loadError ? <div className="hud-panel threat-card hud-error" role="alert">{loadError}</div> : <ThreatCard />}
           <HandoffBanner />
+          <Countdown />
           <ActionLog />
           <EndCard />
           <Controls />
         </div>
       )}
+      <div className="paper-grain" aria-hidden="true" />
+      <Credits />
     </div>
   );
 }

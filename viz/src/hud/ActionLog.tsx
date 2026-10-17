@@ -23,8 +23,14 @@ export default function ActionLog() {
     .filter((entry): entry is { event: ActionEvent; index: number } => entry.event.type === 'action' && entry.event.t <= t)
     .sort((a, b) => b.event.t - a.event.t || b.index - a.index) ?? [];
 
+  if (actions.length === 0) return null;
+
   return (
     <section className="hud-panel action-log" aria-label="Action log">
+      <div className="action-log-head">
+        <h2>Event log</h2>
+        <span className="label">{actions.length} {actions.length === 1 ? 'action' : 'actions'}</span>
+      </div>
       <p className="action-legend">Green = system decides · Amber = officer decides</p>
       <div className="action-list">
         {actions.map(({ event, index }) => (

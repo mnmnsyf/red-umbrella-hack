@@ -5,6 +5,7 @@ import { usePlaybackStore } from '../store';
 import { COLORS, VEXAG } from '../theme';
 import type { ScenarioEvent } from '../types';
 import { seabedDepthAt } from './Seabed';
+import Model, { MODEL_URLS } from './Model';
 
 const SCAN_RADIUS = 28;
 const RESULT_CHIPS = {
@@ -60,14 +61,7 @@ export default function DroneBoat() {
   return (
     <>
       <group position={[x, y * VEXAG, z]} rotation-y={yaw}>
-        <mesh>
-          <boxGeometry args={[14, 4, 6]} />
-          <meshStandardMaterial color={COLORS.acoustic} roughness={0.55} />
-        </mesh>
-        <mesh position={[0, 5, 0]}>
-          <cylinderGeometry args={[0.45, 0.45, 7, 8]} />
-          <meshStandardMaterial color={COLORS.acoustic} roughness={0.55} />
-        </mesh>
+        <Model url={MODEL_URLS.droneBoat} length={14} sink={0.3} />
       </group>
       {moving && (
         <Line
@@ -109,17 +103,8 @@ export default function DroneBoat() {
         </>
       )}
       {!activeScan && chip && (
-        <Html position={[x, y * VEXAG + 14, z]} center>
-          <div style={{
-            padding: '4px 7px',
-            border: `1px solid ${chip.color}`,
-            borderRadius: 5,
-            background: COLORS.background,
-            color: chip.color,
-            font: '12px Inter, system-ui, sans-serif',
-            whiteSpace: 'nowrap',
-            pointerEvents: 'none',
-          }}>
+        <Html position={[x, y * VEXAG + 14, z]} center zIndexRange={[10, 0]}>
+          <div className="scene-label" style={{ borderColor: chip.color }}>
             {chip.text}
           </div>
         </Html>

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { AdditiveBlending, RingGeometry } from 'three';
+import { RingGeometry } from 'three';
 import { COLORS } from '../../theme';
 import type { Vec3 } from '../../types';
 import { scenePosition } from './coordinates';
@@ -24,7 +24,7 @@ export default function SonarPing({ position, startTime, t, rhythm = 'single', d
 
   return (
     <mesh position={scenePosition(position)} rotation-x={-Math.PI / 2} scale={[radius, radius, 1]} geometry={geometry} renderOrder={10}>
-      <meshBasicMaterial color={COLORS.acoustic} transparent opacity={(1 - progress) * 0.95} blending={AdditiveBlending} depthTest={false} depthWrite={false} toneMapped={false} />
+      <meshBasicMaterial color={COLORS.acoustic} transparent opacity={(1 - progress) * 0.95} depthTest={false} depthWrite={false} toneMapped={false} />
     </mesh>
   );
 }
