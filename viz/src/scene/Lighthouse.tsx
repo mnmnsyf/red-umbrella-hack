@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Mesh, MeshStandardMaterial, PointLight } from 'three';
 import { ANGELS_GATE_MAP, mapPosition } from '../location';
+import Pickable from './Pickable';
 
 const [x, z] = mapPosition(
   ANGELS_GATE_MAP.lighthouse.latitude,
@@ -23,15 +24,19 @@ export default function Lighthouse() {
 
   return (
     <group position={[x, 0, z]}>
-      <mesh position={[0, 15, 0]}>
+      <group position={[0, 15, 0]}>
+      <Pickable selection={{ kind: 'lighthouse', id: 'lighthouse' }} radius={25}>
+      <mesh position={[0, 0, 0]}>
         <cylinderGeometry args={[4, 6, 30, 16]} />
         <meshStandardMaterial color="#f4f5ec" roughness={0.75} />
       </mesh>
-      <mesh ref={beacon} position={[0, 31, 0]}>
+      <mesh ref={beacon} position={[0, 16, 0]}>
         <sphereGeometry args={[4.5, 16, 12]} />
         <meshStandardMaterial color="#53f593" emissive="#18e968" emissiveIntensity={0.2} />
       </mesh>
-      <pointLight ref={light} position={[0, 31, 0]} color="#35ff8b" distance={160} decay={2} intensity={0} />
+      <pointLight ref={light} position={[0, 16, 0]} color="#35ff8b" distance={160} decay={2} intensity={0} />
+      </Pickable>
+      </group>
     </group>
   );
 }

@@ -26,6 +26,7 @@ function FittedModel({ url, length, opacity = 1, sink = 0, flip = false, glow = 
     const cloned: Material[] = [];
     clone.traverse((child) => {
       if (!(child instanceof Mesh)) return;
+      child.renderOrder = 10;
       child.material = Array.isArray(child.material)
         ? child.material.map((material: Material) => material.clone())
         : child.material.clone();
@@ -49,12 +50,13 @@ function FittedModel({ url, length, opacity = 1, sink = 0, flip = false, glow = 
     };
   }, [scene, length, sink, glow]);
 
-  const transparent = opacity < 1;
+  // Always in the transparent pass so models draw after the water surface instead of under its tint.
+  const ghost = opacity < 1;
   for (const material of materials) {
-    if (material.transparent !== transparent) material.needsUpdate = true;
-    material.transparent = transparent;
+    if (!material.transparent) material.needsUpdate = true;
+    material.transparent = true;
     material.opacity = opacity;
-    material.depthWrite = !transparent;
+    material.depthWrite = !ghost;
   }
 
   return (

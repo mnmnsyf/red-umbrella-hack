@@ -1,4 +1,4 @@
-import { Html, Line } from '@react-three/drei';
+import { Line } from '@react-three/drei';
 import { DoubleSide, Quaternion, Vector3 } from 'three';
 import { headingAt, positionAt } from '../lib/interp';
 import { usePlaybackStore } from '../store';
@@ -6,6 +6,8 @@ import { COLORS, VEXAG } from '../theme';
 import type { ScenarioEvent } from '../types';
 import { seabedDepthAt } from './Seabed';
 import Model, { MODEL_URLS } from './Model';
+import Callout from './fx/Callout';
+import Pickable from './Pickable';
 
 const SCAN_RADIUS = 28;
 const RESULT_CHIPS = {
@@ -60,8 +62,12 @@ export default function DroneBoat() {
 
   return (
     <>
-      <group position={[x, y * VEXAG, z]} rotation-y={yaw}>
-        <Model url={MODEL_URLS.droneBoat} length={14} sink={0.3} />
+      <group position={[x, y * VEXAG, z]}>
+        <Pickable selection={{ kind: 'drone', id: 'drone' }} radius={28}>
+          <group rotation-y={yaw}>
+            <Model url={MODEL_URLS.droneBoat} length={32} sink={0.3} />
+          </group>
+        </Pickable>
       </group>
       {moving && (
         <Line
@@ -102,13 +108,13 @@ export default function DroneBoat() {
           </mesh>
         </>
       )}
-      {!activeScan && chip && (
-        <Html position={[x, y * VEXAG + 14, z]} center zIndexRange={[10, 0]}>
-          <div className="scene-label" style={{ borderColor: chip.color }}>
-            {chip.text}
-          </div>
-        </Html>
-      )}
+      <Callout
+        position={[x, y, z]}
+        label="Drone boat"
+        detail={activeScan ? 'Scanning contact' : chip ? `Scan: ${chip.text.toLowerCase()}` : moving ? 'En route' : 'Holding'}
+        color={chip && !activeScan ? chip.color : COLORS.acoustic}
+        height={75}
+      />
     </>
   );
 }

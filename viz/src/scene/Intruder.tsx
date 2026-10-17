@@ -1,12 +1,12 @@
-import { Html } from '@react-three/drei';
 import { headingAt, positionAt } from '../lib/interp';
 import { usePlaybackStore } from '../store';
 import { COLORS, VEXAG } from '../theme';
 import type { ScenarioEvent } from '../types';
 import Model, { MODEL_URLS } from './Model';
-import AlertMarker from './fx/AlertMarker';
+import Callout from './fx/Callout';
 import ContactRings from './fx/ContactRings';
 import TrackTrail from './fx/TrackTrail';
+import Pickable from './Pickable';
 
 const TRAIL_SECONDS = 60;
 
@@ -26,6 +26,10 @@ export default function Intruder() {
     if (event.type === 'estimate' && (!estimate || event.t < estimate.t)) estimate = event;
   }
 
+  // "Research AUV · Harbor Ocean Lab · lost 2 days" becomes a short name over a smaller detail line.
+  const [revealName, ...revealRest] = reveal?.text.split(' · ') ?? [''];
+  const revealDetail = revealRest.length ? revealRest.join(' · ') : 'Identified · no threat';
+
   return (
     <>
       <TrackTrail
@@ -38,27 +42,30 @@ export default function Intruder() {
         width={3}
       />
       <ContactRings position={[x, y, z]} t={t} color={reveal ? COLORS.automatic : COLORS.protectedZone} />
-      {estimate && !reveal && <AlertMarker position={[x, y, z]} t={t} startTime={estimate.t} radius={30} height={90} />}
-      <group position={[x, y * VEXAG, z]} rotation-y={yaw}>
+      <Callout
+        position={[x, y, z]}
+        label={reveal ? revealName : estimate ? 'Unknown contact' : 'Acoustic contact'}
+        detail={reveal ? revealDetail : `${Math.round(-y)} m deep · not confirmed`}
+        color={reveal ? COLORS.automatic : COLORS.protectedZone}
+        height={120}
+      />
+      <group position={[x, y * VEXAG, z]}>
+        <Pickable selection={{ kind: 'contact', id: 'contact' }} radius={30}>
+        <group rotation-y={yaw}>
         {!reveal && (
           <mesh>
-            <sphereGeometry args={[11, 16, 12]} />
+            <sphereGeometry args={[20, 16, 12]} />
             <meshBasicMaterial
               color={COLORS.intruder}
               transparent
-              opacity={0.055}
+              opacity={0.08}
               depthWrite={false}
             />
           </mesh>
         )}
-        <Model url={MODEL_URLS.auv} length={22} sink={0.5} opacity={reveal ? 1 : 0.55} />
-        {reveal && (
-          <Html position={[0, 14, 0]} center zIndexRange={[10, 0]}>
-            <div className="scene-label callout" style={{ borderLeftColor: COLORS.automatic }}>
-              {reveal.text}
-            </div>
-          </Html>
-        )}
+        <Model url={MODEL_URLS.auv} length={40} sink={0.5} opacity={reveal ? 1 : 0.7} />
+        </group>
+        </Pickable>
       </group>
     </>
   );

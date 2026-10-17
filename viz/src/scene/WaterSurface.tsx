@@ -4,9 +4,11 @@ import { useFrame } from '@react-three/fiber';
 import { Color, DoubleSide, PlaneGeometry, ShaderMaterial, SRGBColorSpace, Vector3, Vector4 } from 'three';
 import { ANGELS_GATE_MAP } from '../location';
 import { COLORS, HORIZON, SCENE_SIZE, WORLD_SIZE } from '../theme';
+import { usePlaybackStore } from '../store';
 
 // Glassy harbour surface with the real Angels Gate coastline: pale blue water, white fresnel sheen, sun glints and pale land.
 export default function WaterSurface() {
+  const flyToPoint = usePlaybackStore((state) => state.flyToPoint);
   const map = useTexture(ANGELS_GATE_MAP.image);
   const contextMap = useTexture(ANGELS_GATE_MAP.contextImage);
   const landMask = useTexture(ANGELS_GATE_MAP.land);
@@ -108,7 +110,10 @@ export default function WaterSurface() {
   });
 
   return (
-    <mesh rotation-x={-Math.PI / 2} geometry={geometry} renderOrder={2}>
+    <mesh rotation-x={-Math.PI / 2} geometry={geometry} renderOrder={2} onDoubleClick={(event) => {
+      event.stopPropagation();
+      flyToPoint(event.point.toArray() as [number, number, number]);
+    }}>
       <primitive object={material} attach="material" />
     </mesh>
   );

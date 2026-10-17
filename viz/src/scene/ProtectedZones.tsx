@@ -1,14 +1,36 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Html, Line } from '@react-three/drei';
-import { BufferGeometry, DoubleSide, Float32BufferAttribute } from 'three';
+import { useFrame } from '@react-three/fiber';
+import { BufferGeometry, DoubleSide, Float32BufferAttribute, MeshBasicMaterial } from 'three';
+import { useRef } from 'react';
 import { usePlaybackStore } from '../store';
 import { COLORS, VEXAG } from '../theme';
 import type { Zone } from '../types';
 import { seabedDepthAt } from './Seabed';
 
 function ZoneCurtain({ zone }: { zone: Zone }) {
+  const select = usePlaybackStore((state) => state.select);
+  const setHovered = usePlaybackStore((state) => state.setHovered);
+  const hovered = usePlaybackStore((state) => state.hovered);
+  const selected = usePlaybackStore((state) => state.selection);
+  const active = selected?.kind === 'zone' && selected.id === zone.name;
+  const over = hovered?.kind === 'zone' && hovered.id === zone.name;
+  const ring = useRef<MeshBasicMaterial>(null);
   const [minX, minZ] = zone.min;
   const [maxX, maxZ] = zone.max;
+  const centerX = (minX + maxX) / 2;
+  const centerZ = (minZ + maxZ) / 2;
+  const radius = Math.min(maxX - minX, maxZ - minZ) / 2;
+  useFrame(({ clock }) => {
+    if (ring.current && active) ring.current.opacity = 0.75 + 0.15 * Math.sin(clock.elapsedTime * 3);
+  });
+  useEffect(() => () => {
+    const current = usePlaybackStore.getState().hovered;
+    if (current?.kind === 'zone' && current.id === zone.name) {
+      usePlaybackStore.getState().setHovered(null);
+      document.body.style.cursor = '';
+    }
+  }, [zone.name]);
   const corners: [number, number][] = [
     [minX, minZ], [maxX, minZ], [maxX, maxZ], [minX, maxZ], [minX, minZ],
   ];
@@ -41,6 +63,38 @@ function ZoneCurtain({ zone }: { zone: Zone }) {
 
   return (
     <>
+      <mesh
+        position={[centerX, 2, centerZ]}
+        rotation-x={-Math.PI / 2}
+        onClick={(event) => {
+          if (event.delta > 4) return;
+          event.stopPropagation();
+          select({ kind: 'zone', id: zone.name });
+        }}
+        onDoubleClick={(event) => event.stopPropagation()}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          setHovered({ kind: 'zone', id: zone.name });
+          document.body.style.cursor = 'pointer';
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation();
+          const current = usePlaybackStore.getState().hovered;
+          if (current?.kind === 'zone' && current.id === zone.name) {
+            setHovered(null);
+            document.body.style.cursor = '';
+          }
+        }}
+      >
+        <planeGeometry args={[maxX - minX, maxZ - minZ]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} side={DoubleSide} />
+      </mesh>
+      {(over || active) && (
+        <mesh position={[centerX, 2.5, centerZ]} rotation-x={-Math.PI / 2}>
+          <ringGeometry args={[radius * 0.82, radius, 48]} />
+          <meshBasicMaterial ref={ring} color={COLORS.acoustic} transparent opacity={active ? 0.9 : 0.5} depthWrite={false} side={DoubleSide} />
+        </mesh>
+      )}
       <mesh geometry={geometry}>
         <meshBasicMaterial color={COLORS.protectedZone} transparent opacity={0.12} depthWrite={false} side={DoubleSide} />
       </mesh>

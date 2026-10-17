@@ -18,12 +18,14 @@ function formatTime(seconds: number): string {
 export default function ActionLog() {
   const scenario = usePlaybackStore((state) => state.scenario);
   const t = usePlaybackStore((state) => state.t);
+  // The info card takes over this column while something is selected.
+  const inspecting = usePlaybackStore((state) => state.selection !== null);
   const actions = scenario?.events
     .map((event, index) => ({ event, index }))
     .filter((entry): entry is { event: ActionEvent; index: number } => entry.event.type === 'action' && entry.event.t <= t)
     .sort((a, b) => b.event.t - a.event.t || b.index - a.index) ?? [];
 
-  if (actions.length === 0) return null;
+  if (inspecting || actions.length === 0) return null;
 
   return (
     <section className="hud-panel action-log" aria-label="Action log">

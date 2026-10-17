@@ -8,6 +8,7 @@ import HandoffBanner from './hud/HandoffBanner';
 import EndCard from './hud/EndCard';
 import Countdown from './hud/Countdown';
 import Masthead from './hud/Masthead';
+import InfoCard from './hud/InfoCard';
 import Environment from './scene/Environment';
 import Lighthouse from './scene/Lighthouse';
 import PostFX from './scene/fx/PostFX';
@@ -17,6 +18,7 @@ import Intruder from './scene/Intruder';
 import Hydrophones from './scene/Hydrophones';
 import BearingLines from './scene/BearingLines';
 import CameraDirector from './scene/CameraDirector';
+import SafeFrame from './scene/SafeFrame';
 import ProtectedZones from './scene/ProtectedZones';
 import ReachRings from './scene/ReachRings';
 import WaterAtmosphere from './scene/WaterAtmosphere';
@@ -96,7 +98,9 @@ export default function App() {
       }
       if (event.repeat) return;
 
-      if (event.code === 'Space') {
+      if (event.code === 'Escape') {
+        store.backToDirector();
+      } else if (event.code === 'Space') {
         event.preventDefault();
         store.togglePlaying();
       } else if (event.code === 'KeyR') {
@@ -136,6 +140,7 @@ export default function App() {
           <PostFX />
           <Clock />
           <CameraDirector />
+          <SafeFrame />
           <WaterAtmosphere tintRef={tintRef} />
         </Canvas>
       )}
@@ -151,6 +156,7 @@ export default function App() {
           <ActionLog />
           <EndCard />
           <Controls />
+          <InfoCard />
         </div>
       )}
       <div className="paper-grain" aria-hidden="true" />

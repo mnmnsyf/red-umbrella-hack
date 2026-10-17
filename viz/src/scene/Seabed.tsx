@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { Color, MeshStandardMaterial, PlaneGeometry } from 'three';
 import { loadTexture } from '../lib/textures';
 import { COLORS, HORIZON, TEXTURES, VEXAG, WORLD_SIZE } from '../theme';
+import { usePlaybackStore } from '../store';
 
 const SEGMENTS = 512;
 
@@ -31,6 +32,7 @@ export function seabedDepthAt(x: number, z: number): number {
 }
 
 export default function Seabed() {
+  const flyToPoint = usePlaybackStore((state) => state.flyToPoint);
   const geometry = useMemo(() => {
     const plane = new PlaneGeometry(WORLD_SIZE, WORLD_SIZE, SEGMENTS, SEGMENTS);
     const positions = plane.attributes.position;
@@ -110,7 +112,10 @@ uniform float time;`)
   });
 
   return (
-    <mesh rotation-x={-Math.PI / 2} geometry={geometry}>
+    <mesh rotation-x={-Math.PI / 2} geometry={geometry} onDoubleClick={(event) => {
+      event.stopPropagation();
+      flyToPoint(event.point.toArray() as [number, number, number]);
+    }}>
       <primitive object={material} attach="material" />
     </mesh>
   );

@@ -1,5 +1,12 @@
 import { create } from 'zustand';
 import type { Act, Scenario } from './types';
+import type { Vec3 } from './types';
+import { displayPositionOf, INSPECT_DISTANCE } from './scene/selectable';
+
+export type SelectableKind = 'hydrophone' | 'contact' | 'drone' | 'ferry' | 'zone' | 'lighthouse';
+export interface Selection { kind: SelectableKind; id: string }
+
+const directorView = { selection: null, hovered: null, flyRequest: null, freeCamera: false };
 
 interface PlaybackStore {
   scenario: Scenario | null;
@@ -9,6 +16,13 @@ interface PlaybackStore {
   currentAct: Act | null;
   hudVisible: boolean;
   freeCamera: boolean;
+  selection: Selection | null;
+  hovered: Selection | null;
+  flyRequest: { target: Vec3; distance: number; follow: Selection | null; requestedAt: number } | null;
+  select: (selection: Selection) => void;
+  flyToPoint: (point: Vec3) => void;
+  setHovered: (selection: Selection | null) => void;
+  backToDirector: () => void;
   loadScenario: (scenario: Scenario) => void;
   advance: (delta: number) => void;
   togglePlaying: () => void;
@@ -34,9 +48,34 @@ export const usePlaybackStore = create<PlaybackStore>((set, get) => ({
   speedMultiplier: 1,
   currentAct: null,
   hudVisible: true,
-  freeCamera: false,
+  ...directorView,
+
+  select: (selection) => set((state) => {
+    if (!state.scenario) return state;
+    const target = displayPositionOf(selection, state.scenario, state.t);
+    if (!target) return state;
+    return {
+      selection,
+      freeCamera: true,
+      flyRequest: {
+        target, distance: INSPECT_DISTANCE[selection.kind], follow: selection,
+        requestedAt: Math.max(performance.now(), (state.flyRequest?.requestedAt ?? 0) + 0.001),
+      },
+    };
+  }),
+  flyToPoint: (point) => set((state) => ({
+    selection: null,
+    freeCamera: true,
+    flyRequest: {
+      target: [...point], distance: 300, follow: null,
+      requestedAt: Math.max(performance.now(), (state.flyRequest?.requestedAt ?? 0) + 0.001),
+    },
+  })),
+  setHovered: (hovered) => set({ hovered }),
+  backToDirector: () => set(directorView),
 
   loadScenario: (scenario) => set({
+    ...directorView,
     scenario,
     t: 0,
     playing: false,
@@ -72,6 +111,7 @@ export const usePlaybackStore = create<PlaybackStore>((set, get) => ({
   })),
 
   restart: () => set((state) => ({
+    ...directorView,
     t: 0,
     playing: false,
     currentAct: state.scenario ? actAt(state.scenario, 0) : null,
@@ -102,5 +142,7 @@ export const usePlaybackStore = create<PlaybackStore>((set, get) => ({
 
   setSpeedMultiplier: (speedMultiplier) => set({ speedMultiplier }),
   toggleHud: () => set((state) => ({ hudVisible: !state.hudVisible })),
-  toggleFreeCamera: () => set((state) => ({ freeCamera: !state.freeCamera })),
+  toggleFreeCamera: () => set((state) => state.freeCamera
+    ? directorView
+    : { freeCamera: true, selection: null, hovered: null, flyRequest: null }),
 }));
