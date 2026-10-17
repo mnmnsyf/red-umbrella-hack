@@ -15,6 +15,7 @@ interface PlaybackStore {
   restart: () => void;
   jumpToAct: (id: number) => void;
   seek: (seconds: number) => void;
+  seekTo: (time: number) => void;
   setSpeedMultiplier: (speed: number) => void;
   toggleHud: () => void;
   toggleFreeCamera: () => void;
@@ -48,15 +49,19 @@ export const usePlaybackStore = create<PlaybackStore>((set, get) => ({
     if (!scenario || !playing) return;
 
     const next = Math.min(scenario.duration, t + delta * (currentAct?.rate ?? 1) * speedMultiplier);
-    const pause = scenario.acts.find((act) =>
-      act.pauseAt !== undefined && t < act.pauseAt && next >= act.pauseAt,
-    );
-    const nextT = pause?.pauseAt ?? next;
+    let pauseAt: number | undefined;
+    for (const act of scenario.acts) {
+      if (act.pauseAt !== undefined && t < act.pauseAt && next >= act.pauseAt
+        && (pauseAt === undefined || act.pauseAt < pauseAt)) {
+        pauseAt = act.pauseAt;
+      }
+    }
+    const nextT = pauseAt ?? next;
 
     set({
       t: nextT,
       currentAct: actAt(scenario, nextT),
-      playing: pause ? false : nextT < scenario.duration,
+      playing: pauseAt !== undefined ? false : nextT < scenario.duration,
     });
   },
 
@@ -73,18 +78,21 @@ export const usePlaybackStore = create<PlaybackStore>((set, get) => ({
   })),
 
   jumpToAct: (id) => set((state) => {
-    const act = state.scenario?.acts.find((item) => item.id === id);
-    if (!act) return state;
+    const scenario = state.scenario;
+    const act = scenario?.acts.find((item) => item.id === id);
+    if (!scenario || !act) return state;
     return {
       t: act.start,
-      currentAct: act,
+      currentAct: actAt(scenario, act.start),
       playing: act.pauseAt === act.start ? false : state.playing,
     };
   }),
 
-  seek: (seconds) => set((state) => {
+  seek: (seconds) => get().seekTo(get().t + seconds),
+
+  seekTo: (time) => set((state) => {
     if (!state.scenario) return state;
-    const t = Math.max(0, Math.min(state.scenario.duration, state.t + seconds));
+    const t = Math.max(0, Math.min(state.scenario.duration, time));
     return {
       t,
       currentAct: actAt(state.scenario, t),
