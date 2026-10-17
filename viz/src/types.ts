@@ -23,8 +23,16 @@ export interface CameraShot { t: number; pos: Vec3; target: Vec3; dur: number }
 
 export interface Zone { name: string; min: [number, number]; max: [number, number] }  // xz 平面上的矩形
 
+// Optional wording overrides, so a scenario can tell its own story (all fields fall back to the defaults).
+export interface ScenarioText {
+  summaries?: Partial<Record<Phase, string>>;  // threat-card summary per phase
+  revealLevel?: string;                         // threat level shown after the reveal (default "CLEARED")
+  revealSummary?: string;                       // threat-card summary after the reveal
+}
+
 export interface Scenario {
   title: string;
+  text?: ScenarioText;
   duration: number;
   acts: Act[];
   vMax: number;            // 入侵者的最大速度，m/s，用于计算可达范围和倒计时
@@ -37,4 +45,7 @@ export interface Scenario {
   surfaceBoats: { id: string; path: Keyframe[] }[];
   events: ScenarioEvent[];
   camera: CameraShot[];
+  // Optional slow orbit layered on the camera shots so the view never sits still:
+  // swings ±deg around the shot target over `period` scenario-seconds; `lift` varies height by ±lift.
+  cameraDrift?: { deg: number; period: number; lift?: number };
 }

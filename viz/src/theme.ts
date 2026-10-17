@@ -22,12 +22,14 @@ export const COLORS = {
   intruder: '#13283a',
 } as const;
 
+const BASE = import.meta.env.BASE_URL;  // lets the viz be served under a sub-path (e.g. /viz/)
+
 export const TEXTURES = {
-  sand: '/textures/web/seabed-sand.jpg',
-  caustics: '/textures/web/caustics.jpg',
-  grain: '/textures/web/paper-grain.jpg',
-  backdrop: '/textures/web/backdrop.jpg',
-  insignia: '/textures/web/insignia.png',
+  sand: `${BASE}textures/web/seabed-sand.jpg`,
+  caustics: `${BASE}textures/web/caustics.jpg`,
+  grain: `${BASE}textures/web/paper-grain.jpg`,
+  backdrop: `${BASE}textures/web/backdrop.jpg`,
+  insignia: `${BASE}textures/web/insignia.png`,
 } as const;
 
 export const FONT = "'Barlow', system-ui, sans-serif";

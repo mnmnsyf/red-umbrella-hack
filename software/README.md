@@ -8,7 +8,7 @@ Inspired by the Phinorm discussion. This does **not** implement Phinorm's propri
 
 ### 1. Install uv (one time)
 
-[uv](https://docs.astral.sh/uv/) installs the right Python and every dependency for you. Nothing else is needed.
+[uv](https://docs.astral.sh/uv/) installs the right Python and every dependency for you. For the 3D view (the team's `viz/` project) also install [Node.js 18+](https://nodejs.org/); without Node the dashboard still runs, just without the 3D button.
 
 ```bash
 # macOS / Linux
@@ -34,7 +34,7 @@ uv run uvicorn portwatch.server:app --host 127.0.0.1 --port 8000
 
 Then open **http://localhost:8000** in Chrome, Edge or Firefox.
 
-**First start takes about 4–5 minutes.** It generates the simulated recordings (~600 MB of 6-channel audio, in `data/`, not in git) and trains the model. A banner shows progress. Later starts take seconds. **Do the first start before the demo.**
+**First start takes about 4–5 minutes.** It builds the 3D view (when Node is installed), generates the simulated recordings (~600 MB of 6-channel audio, in `data/`, not in git) and trains the model. A banner shows progress. Later starts take seconds. **Do the first start before the demo.**
 
 To use a different port: `PORT=8001 ./start.sh`. To stop: `Ctrl+C`.
 
@@ -47,12 +47,23 @@ To use a different port: `PORT=8001 ./start.sh`. To stop: `Ctrl+C`.
    - **Harbour picture**: the real Port of Los Angeles basin. The hydrophones near the sound glow red, a red area shows the estimated source location, and AIS-reporting ships move through.
    - **Alert card**: "Unusual acoustic event, possible intrusion, not confirmed", with location and AIS cross-check. **Play clip** replays the audio.
    - **Inspection boat**: a 15 s cancel countdown (**Cancel launch** / **Launch now**), then the boat drives out from its dock by the middle pier and sweeps the area with sonar. The search continues after the recording ends (about 1 more minute at 4×).
-4. When it reports a contact, click **Confirmed intrusion**. The boat returns and the verdict is logged.
+   - Once the alert is raised, click **View 3D reconstruction** on the alert card. The dashboard moves to the left half and the 3D view opens on the right, replaying the same incident in sync with the feed clock: the hydrophones that heard it, the location estimate, the boat's route and sonar scan. The camera drifts slowly so it always feels live.
+4. When it reports a contact, click **Confirmed intrusion**. The boat returns, the verdict is logged, and the 3D view shows the confirmed outcome.
 5. Optional: switch to **Analyst**. Show both methods side by side, tick *Show true source positions* (then go back to the Officer map to see the estimate against the truth), and scroll to the evaluation report.
 
 Other recordings: `sim-test-event-08.wav` (diver, then a vehicle: the boat finds the vehicle), `sim-test-event-03.wav` (quiet vehicle, slower search), `sim-test-normal-01.wav` (normal traffic, which should stay NORMAL). Some events are missed or mislocated on purpose. That's part of the honest evaluation. Controls at the bottom change sensitivity, persistence time and detection method live.
 
 All data, vessels, the boat and its sensors are **simulated**, and the screen says so.
+
+### Recording the demo video
+
+```bash
+cd software/tools && npm install --no-save playwright-core && npx playwright-core install ffmpeg
+node record_demo.mjs        # with the app running; drives your Chrome, records the page at 1920x1080 (~90 s)
+ffmpeg -i demo-recording/*.webm -c:v libx264 -crf 20 -pix_fmt yuv420p demo.mp4
+```
+
+It records only the demo page (no screen-recording permission needed). Options: `RECORDING=sim-test-event-08 SPEED=4 node record_demo.mjs`.
 
 ### Troubleshooting
 
@@ -62,6 +73,7 @@ All data, vessels, the boat and its sensors are **simulated**, and the screen sa
 | Port 8000 already in use | `PORT=8001 ./start.sh`, then open http://localhost:8001 |
 | "No trained model" banner | Wait for first-run training, or click **Analyst > Retrain baseline** |
 | Replay falls behind at 8× | Use 4× (six hydrophones take more processing) |
+| No "View 3D reconstruction" button | Install Node.js 18+ and restart `./start.sh` (it builds `../viz` into `web/viz`) |
 | Start fresh | Stop the app, delete `data/` and `models/`, start again |
 
 ### Command line
@@ -108,6 +120,7 @@ alert (array score) ─▶ locate ─▶ dispatch check ─▶ cancel window ─
 - **Location** (`localize.py`): the bands that jumped most above the pre-onset background at the moment the event began become its frequency signature. Two estimates are formed. An *array fix* comes from the delays between hydrophones: weighted cross-correlation (GCC-PHAT) and a grid search over the basin. A *coarse fix* comes from how much the signature rose at each hydrophone, with a 200 m uncertainty. The boat searches around the *best* fix, taken when the sound stood out most.
 - **Dispatch rules** (`dispatch.py`): auto-launch only if there is an active alert, the location is precise enough, the spot is inside the patrol area, no AIS-broadcasting vessel is near the estimate, and the boat is free. The officer then has 15 s to cancel. Otherwise they can dispatch manually or recall the boat.
 - **Boat**: transits at 10 m/s (about 20 kn) along water routes, then sweeps a sonar spiral (60 m range, 3.5 m/s) sized to the uncertainty. On contact it holds station, reports sonar, close-range hydrophone and camera readings, and waits for the officer's verdict. Verdicts go to `data/inspections.json`.
+- **3D reconstruction** (`viz_scenario.py`): the dashboard turns the current incident into a scenario for the team's 3D viz and sends it to the embedded view (browser messages), along with the feed clock. The viz runs in its external mode (`/viz/?external=1`): it follows the dashboard's clock and replaces the scenario as the incident develops. True positions come from the simulation; the alert, estimate, boat route and verdict come from the live session.
 - **What uses ground truth**: only the simulated world, meaning the AIS feed (AIS vessels only), the boat's sonar and camera, the Analyst "true position" overlay, and the evaluator. Alerts and the boat's destination come only from the acoustic model and location estimate.
 
 ### Honest-testing safeguards

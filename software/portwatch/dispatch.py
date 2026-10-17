@@ -183,6 +183,8 @@ class Boat:
 
     def _set(self, state: str, t: float) -> None:
         self.state, self.state_since = state, t
+        if self.sortie is not None:
+            self.sortie.setdefault("states", []).append([round(t, 1), state])
 
     def _travel(self, tx: float, ty: float, speed: float, dt: float) -> float:
         """Follow a water route (around piers and land) to (tx, ty). Returns remaining distance."""
@@ -218,17 +220,18 @@ class Boat:
         b = loc.get("best")
         return {"x": b["x"], "y": b["y"], "r95": b["r95"]} if b else {"x": loc["x"], "y": loc["y"], "r95": loc["r95"]}
 
-    def _launch(self, t: float, event: dict, loc: dict, how: str) -> None:
+    def _launch(self, t: float, event: dict, loc: dict, how: str, state: str = "en_route") -> None:
         self.event_id = event["id"]
         self.handled.add(event["id"])
         self.target = self._search_point(loc)
         self.sortie = {"event_id": event["id"], "launched_at": round(t, 1), "how": how, "event_start": event["start"],
                        "on_scene_at": None, "contact_at": None, "contact": None, "verdict": None, "back_at": None}
-        self._set("en_route", t)
+        self._set(state, t)
 
     def _finish(self, t: float, verdict: str | None, note: str = "") -> None:
         if self.sortie is not None:
             self.sortie["verdict"] = self.sortie["verdict"] or verdict
+            self.sortie["verdict_at"] = round(t, 1)
             self.sortie["note"] = note
         self.waypoints = []
         self._set("returning", t)
@@ -257,10 +260,9 @@ class Boat:
 
         # auto-launch with cancel window
         if self.state == "docked" and p.auto and check["ok"] and event["id"] not in self.handled:
-            self._launch(t, event, loc, "auto")
+            self._launch(t, event, loc, "auto", "pending" if p.cancel_s > 0 else "en_route")
             if p.cancel_s > 0:
                 self.pending_until = t + p.cancel_s
-                self._set("pending", t)
         if self.state == "pending" and t >= (self.pending_until or t):
             self._set("en_route", t)
 

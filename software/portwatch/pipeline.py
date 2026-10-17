@@ -161,6 +161,10 @@ class StreamProcessor:
         self.proc_s = {m: 0.0 for m in METHODS}
         self.loc_s = 0.0
         self.t_sim = 0.0  # simulated-world clock (continues after the audio ends while the boat is out)
+        # history kept for the 3D reconstruction (viz_scenario.py)
+        self.boat_track: list[tuple[float, float, float]] = []      # (t, x, y)
+        self.heard: dict[str, dict[str, dict[int, float]]] = {m: {} for m in METHODS}  # method -> cand start -> hydrophone -> t
+        self.loc_first: dict[str, dict[str, float]] = {m: {} for m in METHODS}
 
     def _thr(self, m: str) -> float:
         return self.bundle.detectors[m].threshold(self.sensitivity, fused=self.array)
@@ -230,6 +234,14 @@ class StreamProcessor:
             for m, eng in self.engines.items():
                 ev = eng.step(t_start, t_end, fused[m], band)
                 self._locate(m, t_end)
+                if eng.cand is not None:
+                    key = f"{eng.cand.start:.2f}"
+                    heard = self.heard[m].setdefault(key, {})
+                    for h, z in enumerate(ch_scores[m]):
+                        if z > eng.params.threshold and h not in heard:
+                            heard[h] = round(t_end, 2)
+                    if self.locations[m] is not None:
+                        self.loc_first[m].setdefault(key, round(t_end, 2))
                 if ev is not None:
                     changed.append(dict(ev))
             # dispatch follows the officer's chosen method
@@ -238,6 +250,7 @@ class StreamProcessor:
             ais = self.truth.ais_at(t_end)
             self.check = self.boat.step(t_end, SPEC.hop_s, act, self.locations[am] if act else None, self.truth, ais)
             self.t_sim = t_end
+            self.boat_track.append((t_end, self.boat.x, self.boat.y))
             frame = {
                 "i": i,
                 "t": round(t_end, 2),
@@ -259,6 +272,7 @@ class StreamProcessor:
             while self.boat.state != "docked" and self.t_sim + SPEC.hop_s <= limit:
                 self.t_sim += SPEC.hop_s
                 self.check = self.boat.step(self.t_sim, SPEC.hop_s, None, None, self.truth, self.truth.ais_at(self.t_sim))
+                self.boat_track.append((self.t_sim, self.boat.x, self.boat.y))
         return frames
 
     @property

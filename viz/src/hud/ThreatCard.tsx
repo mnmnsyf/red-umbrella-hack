@@ -27,9 +27,14 @@ export default function ThreatCard() {
     }
   }
 
-  const state = revealed ? 'cleared' : phase === 'NONE' ? 'normal' : 'alert';
-  const level = state === 'cleared' ? 'CLEARED' : state === 'normal' ? 'NORMAL' : 'ALERT';
-  const summary = revealed ? 'Contact identified as a lost research AUV. No threat.' : SUMMARY[phase];
+  const text = scenario.text;
+  const revealLevel = text?.revealLevel ?? 'CLEARED';
+  const revealCleared = revealLevel === 'CLEARED';
+  const state = revealed ? (revealCleared ? 'cleared' : 'alert') : phase === 'NONE' ? 'normal' : 'alert';
+  const level = revealed ? revealLevel : state === 'normal' ? 'NORMAL' : 'ALERT';
+  const summary = revealed
+    ? text?.revealSummary ?? 'Contact identified as a lost research AUV. No threat.'
+    : text?.summaries?.[phase] ?? SUMMARY[phase];
 
   return (
     <section className={`hud-panel threat-card ${state}`} aria-label="Threat level">

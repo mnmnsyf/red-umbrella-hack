@@ -25,6 +25,7 @@ import { usePlaybackStore } from './store';
 import { preloadTextures } from './lib/textures';
 import { COLORS, TEXTURES } from './theme';
 import type { Scenario } from './types';
+import { isExternal, listenForExternalControl } from './lib/external';
 
 const appColors = {
   '--color-background': COLORS.background,
@@ -55,6 +56,7 @@ export default function App() {
   const hudVisible = usePlaybackStore((state) => state.hudVisible);
 
   useEffect(() => {
+    if (isExternal()) return listenForExternalControl();  // scenario and clock come from the dashboard
     const name = new URLSearchParams(window.location.search).get('scenario') || 'intrusion';
     if (!/^[a-z0-9-]+$/.test(name)) {
       setLoadError('Invalid scenario name');
@@ -150,7 +152,7 @@ export default function App() {
           <Countdown />
           <ActionLog />
           <EndCard />
-          <Controls />
+          {!isExternal() && <Controls />}
         </div>
       )}
       <div className="paper-grain" aria-hidden="true" />

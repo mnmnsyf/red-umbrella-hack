@@ -25,8 +25,10 @@ from .evaluate import evaluate, to_markdown
 from .features import DISPLAY_FREQ_EDGES
 from .model import ModelBundle
 from .pipeline import METHODS, SPEC, StreamProcessor, train_bundle
+from . import viz_scenario
 
 WEB = store.ROOT / "web"
+VIZ = WEB / "viz"  # built 3D visualisation (start.sh builds it from ../viz when Node is available)
 app = FastAPI(title="Port acoustic watch")
 
 _state: dict = {"bundle": None}
@@ -134,6 +136,7 @@ def status():
         "methods": list(METHODS),
         "report_available": (store.REPORT_DIR / "latest.json").exists(),
         "session_errors": store.check_sessions(store.entries()),
+        "viz_available": (VIZ / "index.html").exists(),
         "window_s": SPEC.window_s,
         "hop_s": SPEC.hop_s,
     }
@@ -345,6 +348,17 @@ def stream_policy(sid: str, body: PolicyBody):
     return {"ok": True}
 
 
+@app.get("/api/stream/{sid}/viz")
+def stream_viz(sid: str):
+    """Scenario of the current incident for the embedded 3D visualisation."""
+    s = _stream(sid)
+    proc: StreamProcessor = s["proc"]
+    if not proc.array:
+        raise HTTPException(409, "The 3D reconstruction needs a hydrophone-array recording.")
+    with _lock:
+        return viz_scenario.build(proc, s["entry"])
+
+
 class AckBody(BaseModel):
     event_id: str
     note: str = ""
@@ -383,6 +397,8 @@ async def _no_stale_assets(request, call_next):
     return resp
 
 
+if (VIZ / "index.html").exists():
+    app.mount("/viz", StaticFiles(directory=VIZ, html=True), name="viz")
 app.mount("/static", StaticFiles(directory=WEB), name="static")
 
 

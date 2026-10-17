@@ -154,3 +154,23 @@ def test_boat_cancel_window_and_cancel():
     assert boat.state == "docked" and boat.sorties[-1]["verdict"] == "cancelled by officer"
     boat.step(2.0, 0.5, ev, loc, SceneTruth(None), [])
     assert boat.state == "docked"  # the same alert does not relaunch after a cancel
+
+
+def test_viz_scenario_is_well_formed(small_bundle):
+    from portwatch import viz_scenario
+    from portwatch.dispatch import DispatchPolicy, SceneTruth
+
+    x, _, scene = render_session(SessionPlan("viz", "test", 40, 4242, [{"type": "uuv", "start": 5, "dur": 30, "snr_db": 15}]))
+    proc = StreamProcessor(small_bundle, x, 50, 2.0, truth=SceneTruth(scene), policy=DispatchPolicy(cancel_s=2), display=False)
+    proc.advance(40.0)
+    sc = viz_scenario.build(proc, {"name": "viz.wav"})
+    for key in ("title", "duration", "acts", "hydrophones", "zones", "intruder", "droneBoat", "surfaceBoats", "events", "camera"):
+        assert key in sc
+    assert len(sc["hydrophones"]) == 6
+    assert sc["camera"][0]["t"] == 0
+    times = [k["t"] for k in sc["droneBoat"]["path"]]
+    assert times == sorted(times)
+    assert [e["t"] for e in sc["events"]] == sorted(e["t"] for e in sc["events"])
+    acts = sc["acts"]
+    assert acts[0]["start"] == 0 and all(a["end"] >= b["start"] - 1e-6 for a, b in zip(acts, acts[1:]))
+    assert acts[-1]["end"] <= sc["duration"] + 1e-6

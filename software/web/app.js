@@ -15,6 +15,7 @@ const S = {
   thresholds: {}, method: "spectrogram", sens: 50, pers: 4, inflight: false, timer: null,
   spec: null, dbRange: null, lastT: 0, acks: {}, shownAlertId: null, speed: null,
   harbour: null, map: null, afterEnd: false, virtT: 0, simT: 0, showTruth: false,
+  viz: { open: false, ready: false, lastSent: 0, sig: "" },
 };
 
 // ----------------------------------------------------------------- helpers
@@ -153,6 +154,7 @@ $("feedAudio").addEventListener("ended", () => {
 async function startReplay(recId, seekTo = 0) {
   if (!recId) return;
   stopLoop();
+  if (S.viz?.open && seekTo === 0) closeViz();  // the 3D view belongs to the previous incident
   let info;
   try {
     info = await api("/api/stream/start", { method: "POST", body: JSON.stringify({ recording_id: recId, sensitivity: S.sens, persistence: S.pers, method: S.method, auto_dispatch: $("autoDispatch").checked, cancel_s: +$("cancelSel").value }) });
@@ -177,6 +179,7 @@ async function startReplay(recId, seekTo = 0) {
   $("threatSummary").textContent = "Listening. The first score arrives after one second of audio.";
   $("mapHint").textContent = info.array ? `Port of Los Angeles, Terminal Island basin. Simulated ${info.channels}-hydrophone array.` : "Single hydrophone: no location or dispatch for this recording.";
   renderEvents(); updateAlertCard(); drawSpec(); drawScore(); drawCompare(); drawMap(); updateBoat();
+  preloadViz();
 
   const a = $("feedAudio");
   a.src = `/api/audio/${recId}`;
@@ -213,6 +216,7 @@ async function tick(final) {
     S.simT = r.state.sim_time;
     drawMap(); updateBoat();
     if (r.state.done && S.afterEnd) { stopLoop(); updateAlertCard(); }
+    vizTick(r.state);
     for (const f of r.frames) {
       f.thr = { ...S.thresholds };
       S.frames.push(f);
@@ -233,12 +237,20 @@ async function tick(final) {
 function updateBoard() {
   const f = S.frames[S.frames.length - 1];
   if (!f) return;
-  const lv = f.levels[S.method];
+  let lv = f.levels[S.method];
+  // the threat stays unresolved while the boat inspects it, and after the officer confirms it
+  const b = S.map?.boat;
+  const sortie = b?.sortie || (b?.sorties || []).slice(-1)[0];
+  const confirmed = sortie?.verdict === "confirmed intrusion";
+  if (lv.level < 3 && (S.events[S.method] || []).length && ((b && b.state !== "docked") || confirmed)) {
+    lv = { level: 3, name: "ALERT", summary: confirmed
+      ? "Intrusion confirmed by inspection. Escalate per the port security plan."
+      : "Sound has stopped; the inspection boat is checking the area. Unresolved until the officer's verdict." };
+  }
   document.body.dataset.level = String(lv.level);
   $("threatWord").textContent = LEVEL_WORDS[lv.level];
   document.querySelectorAll("#ladder li").forEach((li) => li.classList.toggle("on", +li.dataset.l === lv.level));
-  const boatOut = S.map?.boat && S.map.boat.state !== "docked";
-  $("threatSummary").textContent = lv.summary + (boatOut && lv.level < 3 ? " Inspection boat is out." : "");
+  $("threatSummary").textContent = lv.summary;
   const progress = lv.level === 3 ? 1 : lv.progress ?? 0;
   $("persistFill").style.width = `${progress * 100}%`;
   $("persistText").textContent = lv.level === 3 ? "alert raised" : lv.progress != null ? `${(progress * S.pers).toFixed(1)} of ${S.pers.toFixed(1)} s` : "quiet";
@@ -285,6 +297,11 @@ function updateAlertCard() {
     ? `Likely known vessel: ${chk.ais_match.name} is ${chk.ais_match.distance_m} m from the estimate`
     : (S.map.ais.length ? `No AIS vessel near the estimate (${S.map.ais.length} vessel${S.map.ais.length === 1 ? "" : "s"} in harbour)` : "No AIS vessels in the harbour");
   $("aAck").disabled = !!acked;
+  const vb = $("vizBtn");
+  const vizOk = S.status?.viz_available && S.stream?.array;
+  if (vizOk && vb.hidden) vb.classList.add("attention");
+  vb.hidden = !vizOk;
+  vb.textContent = S.viz.open ? "Close 3D view" : "View 3D reconstruction";
   $("aAck").textContent = acked ? `Acknowledged ${acked.at || ""}` : "Acknowledge";
 }
 
@@ -631,9 +648,10 @@ function drawSweep(cv, res, kind) {
 }
 
 // ----------------------------------------------------------------- boot
-window.addEventListener("resize", () => { drawSpec(); drawScore(); drawCompare(); drawMap(); });
+window.addEventListener("resize", () => { updateLayoutMode(false); drawSpec(); drawScore(); drawCompare(); drawMap(); });
 (async function boot() {
   document.body.classList.add("standby", "officer-active");
+  updateLayoutMode(false);
   syncControlLabels();
   try { S.harbour = await api("/api/harbour"); } catch {}
   await refreshStatus();
@@ -819,3 +837,82 @@ function responseTable(ra, rb) {
     <div class="table-wrap"><table class="cmp"><thead><tr><th>Measure</th><th>Spectrogram</th><th>EMD</th></tr></thead><tbody>
     ${rows.map(([n, x, y]) => `<tr><td>${n}</td><td class="num">${x}</td><td class="num">${y}</td></tr>`).join("")}</tbody></table></div>`;
 }
+
+// ----------------------------------------------------------------- layout mode + 3D reconstruction (split view)
+// The half-width layout follows the dashboard's own width, so it also applies in split view.
+function updateLayoutMode(redraw = true) {
+  const w = document.body.classList.contains("split") ? innerWidth / 2 : innerWidth;
+  document.body.classList.toggle("half", w < 1500 && w >= 700 && innerHeight > 600);
+  if (redraw) requestAnimationFrame(() => { drawSpec(); drawScore(); drawMap(); });
+}
+
+// The 3D view follows what the dashboard has analysed (not the raw audio playhead, which can run
+// slightly ahead when analysis of six hydrophones is busy), so both halves show the same moment.
+function feedClock() {
+  const a = $("feedAudio");
+  if (S.afterEnd) return { t: S.simT || S.virtT, playing: !!S.timer };
+  return { t: S.simT || a.currentTime, playing: !a.paused && !a.ended };
+}
+
+function vizPost(msg) {
+  const w = $("vizFrame").contentWindow;
+  if (w) w.postMessage({ source: "harbour-watch", ...msg }, location.origin);
+}
+
+async function vizSendScenario() {
+  if (!S.viz.open || !S.viz.ready || !S.stream) return;
+  S.viz.lastSent = performance.now();
+  try {
+    const scenario = await api(`/api/stream/${S.stream.stream_id}/viz`);
+    const c = feedClock();
+    vizPost({ type: "scenario", scenario, t: c.t, speed: +$("speedSel").value, playing: c.playing });
+  } catch (e) { /* the next tick retries */ }
+}
+
+function vizTick(state) {
+  if (!S.viz.open || !S.viz.ready) return;
+  const c = feedClock();
+  vizPost({ type: "sync", t: c.t, speed: +$("speedSel").value, playing: c.playing });
+  // resend the scenario when the incident changes, and every 1.5 s so planned routes stay current
+  const b = state?.map?.boat;
+  const sig = JSON.stringify([(S.events[S.method] || []).map((e) => [e.id, e.status]), b?.state, b?.contact ? 1 : 0, b?.sortie?.verdict]);
+  if (sig !== S.viz.sig || performance.now() - S.viz.lastSent > 1500) { S.viz.sig = sig; vizSendScenario(); }
+}
+
+// Load the 3D scene in the background as soon as a replay starts, so opening it is instant.
+function preloadViz() {
+  if (!S.status?.viz_available || !S.stream?.array) return;
+  S.viz = { open: false, ready: false, lastSent: 0, sig: "" };
+  $("vizFrame").src = "/viz/?external=1";
+}
+
+function openViz() {
+  if (!S.stream) return;
+  if (!$("vizFrame").src.includes("/viz/")) preloadViz();
+  S.viz.open = true;
+  S.viz.sig = "";
+  document.body.classList.add("split");
+  $("vizPanel").hidden = false;
+  if (S.viz.ready) vizSendScenario();
+  $("vizBtn").classList.remove("attention");
+  updateLayoutMode();
+  updateAlertCard();
+}
+
+function closeViz() {
+  S.viz.open = false;
+  document.body.classList.remove("split");
+  $("vizPanel").hidden = true;
+  updateLayoutMode();
+  updateAlertCard();
+}
+
+window.addEventListener("message", (event) => {
+  if (event.origin !== location.origin || event.data?.source !== "harbour-viz") return;
+  if (event.data.type === "ready") { S.viz.ready = true; if (S.viz.open) vizSendScenario(); }
+});
+$("vizBtn").addEventListener("click", () => (S.viz.open ? closeViz() : openViz()));
+$("vizClose").addEventListener("click", closeViz);
+// keep the 3D view in step while paused or seeking
+$("feedAudio").addEventListener("pause", () => vizTick(null));
+$("feedAudio").addEventListener("seeked", () => vizTick(null));

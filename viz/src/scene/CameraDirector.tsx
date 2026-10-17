@@ -12,6 +12,20 @@ function lerpVec3(from: Vec3, to: Vec3, amount: number): Vec3 {
   ];
 }
 
+function withDrift(pos: Vec3, target: Vec3, t: number, drift?: { deg: number; period: number; lift?: number }): Vec3 {
+  if (!drift || drift.period <= 0) return pos;
+  const phase = (2 * Math.PI * t) / drift.period;
+  const angle = (drift.deg * Math.PI / 180) * Math.sin(phase);
+  const dx = pos[0] - target[0];
+  const dz = pos[2] - target[2];
+  const lift = 1 + (drift.lift ?? 0) * Math.sin(phase * 0.5 + 1.3);
+  return [
+    target[0] + dx * Math.cos(angle) - dz * Math.sin(angle),
+    target[1] + (pos[1] - target[1]) * lift,
+    target[2] + dx * Math.sin(angle) + dz * Math.cos(angle),
+  ];
+}
+
 function cameraPoseAt(shots: CameraShot[], t: number) {
   let index = 0;
   for (let i = 1; i < shots.length; i += 1) {
@@ -30,6 +44,7 @@ function cameraPoseAt(shots: CameraShot[], t: number) {
 
 export default function CameraDirector() {
   const shots = usePlaybackStore((state) => state.scenario?.camera);
+  const drift = usePlaybackStore((state) => state.scenario?.cameraDrift);
   const freeCamera = usePlaybackStore((state) => state.freeCamera);
   const camera = useThree((state) => state.camera);
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
@@ -43,8 +58,9 @@ export default function CameraDirector() {
 
   useFrame(() => {
     if (usePlaybackStore.getState().freeCamera || !shots?.length) return;
-    const { pos, target } = cameraPoseAt(shots, usePlaybackStore.getState().t);
-    camera.position.set(...pos);
+    const t = usePlaybackStore.getState().t;
+    const { pos, target } = cameraPoseAt(shots, t);
+    camera.position.set(...withDrift(pos, target, t, drift));
     camera.lookAt(...target);
   });
 

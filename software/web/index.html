@@ -114,6 +114,7 @@
         <div class="alert-actions">
           <button class="btn primary" id="aPlay">Play clip</button>
           <button class="btn" id="aAck">Acknowledge</button>
+          <button class="btn viz-btn" id="vizBtn" hidden>View 3D reconstruction</button>
         </div>
         <audio id="clipAudio" controls preload="none" hidden></audio>
       </div>
@@ -254,6 +255,14 @@
     </form>
   </section>
 </main>
+
+<aside class="viz-panel" id="vizPanel" aria-label="3D reconstruction" hidden>
+  <div class="viz-head">
+    <span><strong>3D reconstruction</strong> of this incident, in sync with the feed. True positions from the simulation.</span>
+    <button class="btn small" id="vizClose">Close</button>
+  </div>
+  <iframe id="vizFrame" title="3D reconstruction of the incident"></iframe>
+</aside>
 
 <script src="/static/app.js"></script>
 </body>

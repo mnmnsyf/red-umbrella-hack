@@ -4,3 +4,5 @@ models/
 .venv/
 __pycache__/
 .pytest_cache/
+web/viz/
+tools/node_modules/
