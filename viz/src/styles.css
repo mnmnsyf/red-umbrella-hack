@@ -641,17 +641,22 @@ body,
 
 .credits {
   position: absolute;
-  right: 28px;
-  bottom: 6px;
+  right: 24px;
+  bottom: 102px;
   z-index: 31;
+  max-width: min(440px, calc(100vw - 48px));
+  padding: 6px 9px;
+  border-radius: 5px;
+  border: 1px solid var(--color-line);
+  background: rgb(251 252 253 / 88%);
+  box-shadow: 0 4px 14px rgb(19 40 58 / 10%);
   color: var(--color-neutral);
-  font-size: 10px;
-  opacity: 0.75;
+  font-size: 11px;
+  line-height: 1.35;
   pointer-events: none;
 }
 
 @media (max-width: 1280px) {
-  .masthead p,
   .sim-chip {
     display: none;
   }
@@ -676,6 +681,10 @@ body,
 }
 
 @media (max-width: 720px) {
+  .masthead p {
+    display: none;
+  }
+
   .masthead {
     height: 56px;
   }
@@ -703,5 +712,12 @@ body,
 
   .controls-panel {
     flex-wrap: wrap;
+  }
+
+  .credits {
+    right: 24px;
+    bottom: 180px;
+    left: 24px;
+    max-width: none;
   }
 }

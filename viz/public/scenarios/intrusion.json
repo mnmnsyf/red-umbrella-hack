@@ -1,5 +1,5 @@
 {
-  "title": "Unknown object in the harbor",
+  "title": "Angels Gate · Port of Los Angeles",
   "duration": 335,
   "vMax": 2.5,
   "tHuman": 30,
@@ -17,7 +17,7 @@
     { "id": "H3", "pos": [-100, -38, -700] }
   ],
   "zones": [
-    { "name": "Ferry terminal", "min": [-450, 200], "max": [-150, 400] }
+    { "name": "Outer harbor berth", "min": [-450, 200], "max": [-150, 400] }
   ],
   "fish": { "center": [500, -25, 300], "radiusXZ": 120, "radiusY": 8, "count": 800, "label": "Spawning aggregation · protected" },
   "intruder": {

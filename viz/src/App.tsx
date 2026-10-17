@@ -9,6 +9,7 @@ import EndCard from './hud/EndCard';
 import Countdown from './hud/Countdown';
 import Masthead from './hud/Masthead';
 import Environment from './scene/Environment';
+import Lighthouse from './scene/Lighthouse';
 import PostFX from './scene/fx/PostFX';
 import SurfaceBoats from './scene/SurfaceBoats';
 import DroneBoat from './scene/DroneBoat';
@@ -123,6 +124,7 @@ export default function App() {
           camera={{ position: openingShot.pos, fov: 40, near: 1, far: 6000 }}
         >
           <Environment />
+          <Lighthouse />
           <SurfaceBoats />
           <DroneBoat />
           <Intruder />
