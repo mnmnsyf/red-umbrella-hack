@@ -67,7 +67,7 @@
     { "t": 275,  "type": "action", "text": "Close scan approved by officer", "mode": "approved" },
     { "t": 287,  "type": "scan", "dur": 12, "result": "identified" },
     { "t": 300,  "type": "reveal", "text": "Research AUV · Harbor Ocean Lab · lost 2 days" },
-    { "t": 315,  "type": "endcard", "lines": ["Lost research vehicle found.", "Owner notified. Port never closed."] }
+    { "t": 315,  "type": "resolved", "incidentId": "SPEC-001", "detector": "Spectrogram detector", "title": "Unusual acoustic event", "outcome": "Research AUV · Harbor Ocean Lab" }
   ],
   "camera": [
     {"t":  0, "pos": [1674, 1813, 1996], "target": [0, -80, 0], "dur": 0},

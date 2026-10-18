@@ -17,7 +17,7 @@ export type ScenarioEvent =
   | { t: number; type: "scan"; dur: number; result: "clear" | "suspicious" | "undetermined" | "identified" }
   | { t: number; type: "reveal"; text: string }                             // 入侵者从幽灵变成实体
   | { t: number; type: "banner"; text: string; style: "handoff" | "info" }
-  | { t: number; type: "endcard"; lines: string[] };
+  | { t: number; type: "resolved"; incidentId: string; detector: string; title: string; outcome: string };
 
 export interface CameraShot { t: number; pos: Vec3; target: Vec3; dur: number }
 
@@ -26,8 +26,6 @@ export interface Zone { name: string; min: [number, number]; max: [number, numbe
 // Optional wording overrides, so a scenario can tell its own story (all fields fall back to the defaults).
 export interface ScenarioText {
   summaries?: Partial<Record<Phase, string>>;  // threat-card summary per phase
-  revealLevel?: string;                         // threat level shown after the reveal (default "CLEARED")
-  revealSummary?: string;                       // threat-card summary after the reveal
 }
 
 export interface Scenario {

@@ -239,7 +239,7 @@ body,
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  transition: background 500ms, border-color 500ms, color 500ms;
+  transition: background-color 1.2s, border-color 1.2s, color 1.2s;
 }
 
 .threat-card .level {
@@ -283,8 +283,13 @@ body,
   color: rgb(255 255 255 / 85%);
 }
 
-.threat-card.cleared .level {
-  color: var(--color-automatic);
+.threat-card.watch {
+  border-color: var(--color-approval);
+  background-color: rgb(253 247 236 / 95%);
+}
+
+.threat-card.watch .level {
+  color: var(--color-approval);
 }
 
 .threat-card.normal .level {
@@ -440,24 +445,154 @@ body,
   transform: translateX(-50%);
 }
 
-.end-card {
+.incident-report {
   z-index: 2;
   top: 50%;
   left: 50%;
-  width: min(560px, calc(100vw - 32px));
-  padding: 32px 40px;
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100vh - 220px);
+  min-height: 0;
+  padding: 24px;
   flex-direction: column;
-  gap: 12px;
-  text-align: center;
-  transform: translate(-50%, -50%);
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow: hidden;
+  animation: none;
+  pointer-events: auto;
+  transition: border-color 0.4s;
 }
 
-.end-card p {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(22px, 2.3vw, 32px);
+.incident-report.active {
+  border-color: var(--color-protected-zone);
+}
+
+.incident-report.resolved {
+  border-color: var(--color-automatic);
+}
+
+.incident-report-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.incident-report-source {
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.incident-report-source strong {
+  margin-right: 7px;
   font-weight: 700;
-  line-height: 1.25;
+}
+
+.incident-report-header h2 {
+  margin: 8px 0 3px;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 2.3vw, 30px);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.incident-report-header p {
+  margin: 0;
+  color: var(--color-neutral);
+  font-size: 14px;
+}
+
+.incident-report-status {
+  flex: none;
+  padding: 4px 11px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background-color 0.4s;
+}
+
+.incident-report.active .incident-report-status {
+  background-color: var(--color-protected-zone);
+}
+
+.incident-report.resolved .incident-report-status {
+  background-color: var(--color-automatic);
+}
+
+.incident-report-timeline {
+  min-height: 0;
+  padding: 8px 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.incident-report-row {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 7px 4px 7px 10px;
+  border-left: 3px solid transparent;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.incident-report-row.officer {
+  border-left-color: var(--color-approval);
+}
+
+.incident-report-row time {
+  color: var(--color-neutral);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.incident-report-event {
+  overflow-wrap: anywhere;
+}
+
+.incident-report-by {
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--color-automatic);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.incident-report-row.officer .incident-report-by {
+  color: var(--color-approval);
+}
+
+.incident-report-stats {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-line);
+}
+
+.incident-report-stats div {
+  display: flex;
+  flex-direction: column;
+}
+
+.incident-report-stats strong {
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.incident-report-stats span {
+  margin-top: 3px;
+  color: var(--color-neutral);
+  font-size: 11px;
 }
 
 /* Bottom transport bar with phase timeline. */
@@ -681,6 +816,22 @@ body,
 }
 
 @media (max-width: 720px) {
+  .incident-report {
+    padding: 16px;
+  }
+
+  .incident-report-row {
+    grid-template-columns: 57px minmax(0, 1fr) auto;
+    gap: 6px;
+    padding-left: 5px;
+    font-size: 12px;
+  }
+
+  .incident-report-source,
+  .incident-report-header p {
+    font-size: 12px;
+  }
+
   .masthead p {
     display: none;
   }
@@ -719,5 +870,18 @@ body,
     bottom: 180px;
     left: 24px;
     max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .incident-report,
+  .incident-report-row,
+  .incident-report-stats {
+    opacity: 1 !important;
+    transition: none;
+  }
+
+  .incident-report {
+    transform: translate(-50%, -50%) !important;
   }
 }

@@ -20,6 +20,7 @@ export default function Intruder() {
   const yaw = headingAt(path, t) - Math.PI / 2;
   let reveal: Extract<ScenarioEvent, { type: 'reveal' }> | undefined;
   let estimate: Extract<ScenarioEvent, { type: 'estimate' }> | undefined;
+  const resolvedTime = scenario.events.find((event) => event.type === 'resolved')?.t;
   for (const event of scenario.events) {
     if (event.t > t) continue;
     if (event.type === 'reveal' && (!reveal || event.t > reveal.t)) reveal = event;
@@ -37,7 +38,7 @@ export default function Intruder() {
         opacity={reveal ? 0.6 : 0.4}
         width={3}
       />
-      <ContactRings position={[x, y, z]} t={t} color={reveal ? COLORS.automatic : COLORS.protectedZone} />
+      <ContactRings position={[x, y, z]} t={t} resolvedTime={resolvedTime} color={reveal ? COLORS.automatic : COLORS.protectedZone} />
       {estimate && !reveal && <AlertMarker position={[x, y, z]} t={t} startTime={estimate.t} radius={30} height={90} />}
       <group position={[x, y * VEXAG, z]} rotation-y={yaw}>
         {!reveal && (

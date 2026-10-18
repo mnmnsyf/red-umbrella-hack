@@ -5,7 +5,7 @@ import Credits from './hud/Credits';
 import ThreatCard from './hud/ThreatCard';
 import ActionLog from './hud/ActionLog';
 import HandoffBanner from './hud/HandoffBanner';
-import EndCard from './hud/EndCard';
+import IncidentReport from './hud/IncidentReport';
 import Countdown from './hud/Countdown';
 import Masthead from './hud/Masthead';
 import Environment from './scene/Environment';
@@ -149,7 +149,7 @@ export default function App() {
           <HandoffBanner />
           <Countdown />
           <ActionLog />
-          <EndCard />
+          <IncidentReport />
           {!isExternal() && <Controls />}
         </div>
       )}

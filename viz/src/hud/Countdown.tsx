@@ -13,7 +13,7 @@ export default function Countdown() {
   if (!scenario || scenario.zones.length === 0 || scenario.vMax <= 0) return null;
 
   const locateStart = scenario.events.find((event) => event.type === 'phase' && event.phase === 'LOCATE')?.t;
-  const endTime = scenario.events.find((event) => event.type === 'endcard')?.t;
+  const endTime = scenario.events.find((event) => event.type === 'resolved')?.t;
   if (locateStart === undefined || t < locateStart || (endTime !== undefined && t >= endTime)) return null;
 
   const approval = scenario.events.find((event) => event.type === 'action' && event.mode === 'approved' && event.t <= t);
