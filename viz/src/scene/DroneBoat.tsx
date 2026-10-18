@@ -41,7 +41,8 @@ export default function DroneBoat() {
     }
   }
 
-  const [intruderX, , intruderZ] = positionAt(scenario.intruder.path, t);
+  const [intruderX, , intruderZ] = scenario.truthVisible === false && t < scenario.intruder.visibleFrom
+    ? [x, 0, z] : positionAt(scenario.intruder.path, t);
   const scanTop = new Vector3(x, y * VEXAG - 2, z);
   const scanBottom = new Vector3(
     intruderX,

@@ -26,6 +26,7 @@ export interface Zone { name: string; min: [number, number]; max: [number, numbe
 // Optional wording overrides, so a scenario can tell its own story (all fields fall back to the defaults).
 export interface ScenarioText {
   summaries?: Partial<Record<Phase, string>>;  // threat-card summary per phase
+  revealSummary?: string;
 }
 
 export interface Scenario {
@@ -39,6 +40,7 @@ export interface Scenario {
   zones: Zone[];
   fish?: { center: Vec3; radiusXZ: number; radiusY: number; count: number; label: string };
   intruder: { path: Keyframe[]; visibleFrom: number };
+  truthVisible?: boolean;
   droneBoat: { path: Keyframe[] };
   surfaceBoats: { id: string; path: Keyframe[] }[];
   events: ScenarioEvent[];

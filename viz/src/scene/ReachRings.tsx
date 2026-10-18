@@ -43,7 +43,7 @@ function ReachRing({ seconds, vMax, pos, zones }: { seconds: number; vMax: numbe
 export default function ReachRings() {
   const scenario = usePlaybackStore((state) => state.scenario);
   const t = usePlaybackStore((state) => state.t);
-  if (!scenario) return null;
+  if (!scenario || scenario.truthVisible === false) return null;
 
   const locateStart = scenario.events.find((event) => event.type === 'phase' && event.phase === 'LOCATE')?.t;
   if (locateStart === undefined || t < locateStart) return null;

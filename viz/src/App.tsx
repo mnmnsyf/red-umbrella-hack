@@ -26,7 +26,8 @@ import { usePlaybackStore } from './store';
 import { preloadTextures } from './lib/textures';
 import { COLORS, TEXTURES } from './theme';
 import type { Scenario } from './types';
-import { isExternal, listenForExternalControl } from './lib/external';
+import { listenForExternalControl } from './lib/external';
+import { isExternal } from './lib/mode';
 
 const appColors = {
   '--color-background': COLORS.background,
@@ -90,6 +91,10 @@ export default function App() {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (isExternal() && ['ArrowLeft', 'ArrowRight', 'Space', 'KeyR', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9'].includes(event.code)) {
+        event.preventDefault();
+        return;
+      }
 
       const store = usePlaybackStore.getState();
       if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
@@ -125,7 +130,7 @@ export default function App() {
         <Canvas
           className="scene"
           flat
-          dpr={[1, 2]}
+          dpr={isExternal() ? [1, 1.5] : [1, 2]}
           camera={{ position: openingShot.pos, fov: 40, near: 1, far: 6000 }}
         >
           <Environment />

@@ -64,7 +64,7 @@ export default function CameraDirector() {
     const { target } = cameraPoseAt(shots, usePlaybackStore.getState().t);
     controls.current.target.set(...target);
     controls.current.update();
-  }, [freeCamera, shots]);
+  }, [freeCamera]);
 
   useFrame(({ clock }) => {
     const state = usePlaybackStore.getState();
@@ -141,12 +141,8 @@ export default function CameraDirector() {
   });
 
   return <OrbitControls ref={controls} enabled={freeCamera} onStart={() => {
-    if (flight.current) {
-      flight.current = null;
-      const state = usePlaybackStore.getState();
-      followedAt.current = state.flyRequest?.follow && state.scenario
-        ? displayPositionOf(state.flyRequest.follow, state.scenario, state.t)
-        : null;
-    }
+    flight.current = null;
+    followedAt.current = null;
+    usePlaybackStore.getState().stopFollowing();
   }} />;
 }

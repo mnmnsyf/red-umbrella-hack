@@ -349,14 +349,14 @@ def stream_policy(sid: str, body: PolicyBody):
 
 
 @app.get("/api/stream/{sid}/viz")
-def stream_viz(sid: str):
+def stream_viz(sid: str, show_truth: bool = False):
     """Scenario of the current incident for the embedded 3D visualisation."""
     s = _stream(sid)
     proc: StreamProcessor = s["proc"]
     if not proc.array:
         raise HTTPException(409, "The 3D reconstruction needs a hydrophone-array recording.")
     with _lock:
-        return viz_scenario.build(proc, s["entry"])
+        return viz_scenario.build(proc, s["entry"], show_truth=show_truth)
 
 
 class AckBody(BaseModel):

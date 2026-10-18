@@ -4,8 +4,9 @@ import { Color, MeshStandardMaterial, PlaneGeometry } from 'three';
 import { loadTexture } from '../lib/textures';
 import { COLORS, HORIZON, TEXTURES, VEXAG, WORLD_SIZE } from '../theme';
 import { usePlaybackStore } from '../store';
+import { isExternal } from '../lib/mode';
 
-const SEGMENTS = 512;
+const SEGMENTS = isExternal() ? 256 : 512;
 
 function valueNoise(x: number, z: number): number {
   const ix = Math.floor(x);

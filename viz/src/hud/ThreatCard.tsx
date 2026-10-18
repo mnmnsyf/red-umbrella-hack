@@ -35,7 +35,7 @@ export default function ThreatCard() {
   const summary = resolved
     ? `Incident ${resolved.incidentId} resolved. Harbour quiet. All hydrophones listening.`
     : revealed
-      ? 'Contact identified as a lost research AUV. No threat. Closing incident.'
+      ? text?.revealSummary ?? 'Contact identified as a lost research AUV. No threat. Closing incident.'
       : text?.summaries?.[phase] ?? SUMMARY[phase];
 
   return (

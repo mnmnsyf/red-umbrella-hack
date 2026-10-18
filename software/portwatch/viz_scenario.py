@@ -5,9 +5,9 @@ the incident develops; the viz follows the dashboard's feed clock, so both
 halves of the screen show the same moment.
 
 What it contains
-- The simulated hydrophone array, berths (as protected zones), surface
-  vessels, and the unusual source's track: the simulated world, so the 3D view
-  is a reconstruction that shows where things really are.
+- The simulated hydrophone array and berths. The source's true track and
+  non-AIS craft are included only when truth display is requested or the
+  source has been confirmed by an officer.
 - What the system knew and did, taken from the live session: alert time and
   score, which hydrophones heard it, the location estimate, the inspection
   boat's actual track plus its planned route, sonar contact, officer verdict.
@@ -77,7 +77,7 @@ def _boat_plan(boat, t_now: float) -> list[dict]:
     return out
 
 
-def build(proc, entry: dict) -> dict:
+def build(proc, entry: dict, show_truth: bool = False) -> dict:
     t_now = proc.now()
     m = proc.active_method
     eng = proc.engines[m]
@@ -123,8 +123,9 @@ def build(proc, entry: dict) -> dict:
         if fix and lf is not None:
             t_loc = max(t_alert + 2.0, lf)  # shown just after the alert so the phases read in order
             events.append({"t": t_loc, "type": "phase", "phase": "LOCATE"})
-            events.append({"t": t_loc, "type": "bearings", "noiseDeg": 4})
-            events.append({"t": t_loc, "type": "estimate", "pos": V(fix["x"], fix["y"], src_depth),
+            if show_truth:
+                events.append({"t": t_loc, "type": "bearings", "noiseDeg": 4})
+            events.append({"t": t_loc, "type": "estimate", "pos": V(fix["x"], fix["y"]),
                            "radius": fix["r95"], "shrinkTo": fix["r95"], "shrinkDur": 1})
 
     t_launch = sortie["launched_at"] if sortie else None
@@ -188,15 +189,17 @@ def build(proc, entry: dict) -> dict:
             track.append({"t": round(t, 2), "pos": V(x, y)})
     track += [k for k in _boat_plan(boat, t_now) if k["t"] > track[-1]["t"]]
 
-    if src:
+    truth_revealed_at = t_verdict if verdict == "confirmed intrusion" and t_contact is not None else None
+    if src and (show_truth or truth_revealed_at is not None):
+        visible_from = (cand_start if cand_start is not None else src["t_on"]) if show_truth else truth_revealed_at
         intruder = {"path": [{"t": round(p[0], 2), "pos": V(p[1], p[2], src_depth)} for p in src["track"]],
-                    "visibleFrom": round(cand_start if cand_start is not None else src["t_on"], 2)}
+                    "visibleFrom": round(visible_from, 2)}
     else:
         intruder = {"path": [{"t": 0.0, "pos": [0.0, -8.0, 0.0]}], "visibleFrom": 1e9}
 
     boats = []
     for i, s in enumerate(truth.sources):
-        if s["kind"] in ("large vessel", "small craft"):
+        if s["kind"] in ("large vessel", "small craft") and (show_truth or s["ais"]):
             path = [{"t": round(p[0], 2), "pos": V(p[1], p[2])} for p in s["track"]]
             boats.append({"id": (s["ais"] or {}).get("name") or f"craft-{i}", "path": path})
 
@@ -217,7 +220,7 @@ def build(proc, entry: dict) -> dict:
     if t_search is not None:
         bx, by = next(((x, y) for t, x, y in proc.boat_track if t >= t_search), (boat.x, boat.y))
         camera.append({"t": t_search, "pos": _scene(bx, by, 0, up=220, back=300), "target": _scene(bx, by, -6), "dur": 4})
-    if t_contact is not None and src:
+    if t_contact is not None and src and show_truth:
         sx, sy = position(src["track"], t_contact)
         camera.append({"t": t_contact, "pos": _scene(sx, sy, src_depth, up=40, back=150, side=60), "target": _scene(sx, sy, src_depth), "dur": 4})
     if t_verdict is not None and fix:
@@ -242,6 +245,7 @@ def build(proc, entry: dict) -> dict:
         "hydrophones": [{"id": h["id"], "pos": V(h["x"], h["y"], -20)} for h in H.HYDROPHONES],
         "zones": zones,
         "intruder": intruder,
+        "truthVisible": show_truth,
         "droneBoat": {"path": track},
         "surfaceBoats": boats,
         "events": events,

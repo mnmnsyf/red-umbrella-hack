@@ -164,6 +164,10 @@ def test_viz_scenario_is_well_formed(small_bundle):
     proc = StreamProcessor(small_bundle, x, 50, 2.0, truth=SceneTruth(scene), policy=DispatchPolicy(cancel_s=2), display=False)
     proc.advance(40.0)
     sc = viz_scenario.build(proc, {"name": "viz.wav"})
+    truth_sc = viz_scenario.build(proc, {"name": "viz.wav"}, show_truth=True)
+    assert sc["truthVisible"] is False and truth_sc["truthVisible"] is True
+    assert not any(e["type"] == "bearings" for e in sc["events"])
+    assert sc["intruder"]["visibleFrom"] >= truth_sc["intruder"]["visibleFrom"]
     for key in ("title", "duration", "acts", "hydrophones", "zones", "intruder", "droneBoat", "surfaceBoats", "events", "camera"):
         assert key in sc
     assert len(sc["hydrophones"]) == 6

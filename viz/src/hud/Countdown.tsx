@@ -10,7 +10,7 @@ function formatTime(seconds: number): string {
 export default function Countdown() {
   const scenario = usePlaybackStore((state) => state.scenario);
   const t = usePlaybackStore((state) => state.t);
-  if (!scenario || scenario.zones.length === 0 || scenario.vMax <= 0) return null;
+  if (!scenario || scenario.truthVisible === false || scenario.zones.length === 0 || scenario.vMax <= 0) return null;
 
   const locateStart = scenario.events.find((event) => event.type === 'phase' && event.phase === 'LOCATE')?.t;
   const endTime = scenario.events.find((event) => event.type === 'resolved')?.t;

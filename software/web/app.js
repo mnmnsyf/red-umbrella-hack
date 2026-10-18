@@ -14,8 +14,8 @@ const S = {
   status: null, library: [], stream: null, frames: [], events: { spectrogram: [], emd: [] },
   thresholds: {}, method: "spectrogram", sens: 50, pers: 4, inflight: false, timer: null,
   spec: null, dbRange: null, lastT: 0, acks: {}, shownAlertId: null, speed: null,
-  harbour: null, map: null, afterEnd: false, virtT: 0, simT: 0, showTruth: false,
-  viz: { open: false, ready: false, lastSent: 0, sig: "" },
+  harbour: null, map: null, afterEnd: false, virtT: 0, simT: 0, showTruth: false, replayGeneration: 0,
+  viz: { open: false, ready: false, lastSent: 0, sig: "", version: 0, replayId: null, focusPending: false },
 };
 
 // ----------------------------------------------------------------- helpers
@@ -65,6 +65,7 @@ document.querySelectorAll(".view-btn").forEach((btn) =>
     $("view-analyst").hidden = btn.dataset.view !== "analyst";
     if (btn.dataset.view === "analyst") { renderLibrary(); loadReport(); drawCompare(); loadInspections(); }
     else { drawSpec(); drawScore(); drawMap(); }
+    vizSendScenario();
   })
 );
 
@@ -77,6 +78,7 @@ async function refreshStatus() {
     return;
   }
   const st = S.status;
+  if (st.viz_available) preloadViz();
   if (st.training) {
     const j = st.jobs.find((x) => x.kind === "train" && x.status === "running");
     banner(`Learning what normal port activity sounds like from the training sessions${j?.message ? ` (${j.message})` : ""}. The first run takes about a minute.`);
@@ -135,15 +137,15 @@ $("methodSel").addEventListener("change", (e) => {
   S.method = e.target.value; syncControlLabels(); S.shownAlertId = null;
   if (S.frames.length) { updateBoard(); renderEvents(); drawScore(); }
 });
-$("speedSel").addEventListener("change", (e) => { $("feedAudio").playbackRate = +e.target.value; });
+$("speedSel").addEventListener("change", (e) => { $("feedAudio").playbackRate = +e.target.value; vizSync(); });
 
 $("startBtn").addEventListener("click", () => startReplay($("recSelect").value));
 $("pauseBtn").addEventListener("click", () => {
   const a = $("feedAudio");
   if (a.paused) a.play(); else a.pause();
 });
-$("feedAudio").addEventListener("play", () => { $("pauseBtn").textContent = "Pause"; });
-$("feedAudio").addEventListener("pause", () => { $("pauseBtn").textContent = "Resume"; });
+$("feedAudio").addEventListener("play", () => { $("pauseBtn").textContent = "Pause"; vizSync(); });
+$("feedAudio").addEventListener("pause", () => { $("pauseBtn").textContent = "Resume"; vizSync(); });
 $("feedAudio").addEventListener("ended", () => {
   // recording over: keep the simulated world running while the boat is out
   if (!S.stream) return;
@@ -153,12 +155,17 @@ $("feedAudio").addEventListener("ended", () => {
 // ----------------------------------------------------------------- replay
 async function startReplay(recId, seekTo = 0) {
   if (!recId) return;
+  const generation = ++S.replayGeneration;
   stopLoop();
-  if (S.viz?.open && seekTo === 0) closeViz();  // the 3D view belongs to the previous incident
+  S.inflight = false;
+  S.viz.replayId = `pending-${generation}`;
+  S.viz.version = 0;
+  if (S.viz.ready) vizPost({ type: "reset", replayId: S.viz.replayId, version: 0 });
   let info;
   try {
     info = await api("/api/stream/start", { method: "POST", body: JSON.stringify({ recording_id: recId, sensitivity: S.sens, persistence: S.pers, method: S.method, auto_dispatch: $("autoDispatch").checked, cancel_s: +$("cancelSel").value }) });
   } catch (e) { banner(e.message, "error"); return; }
+  if (generation !== S.replayGeneration) return;
   S.stream = info; S.frames = []; S.events = { spectrogram: [], emd: [] }; S.thresholds = info.thresholds;
   S.dbRange = null; S.lastT = 0; S.acks = {}; S.shownAlertId = null; S.map = null; S.afterEnd = false; S.virtT = 0; S.simT = 0;
   const off = document.createElement("canvas");
@@ -179,7 +186,15 @@ async function startReplay(recId, seekTo = 0) {
   $("threatSummary").textContent = "Listening. The first score arrives after one second of audio.";
   $("mapHint").textContent = info.array ? `Port of Los Angeles, Terminal Island basin. Simulated ${info.channels}-hydrophone array.` : "Single hydrophone: no location or dispatch for this recording.";
   renderEvents(); updateAlertCard(); drawSpec(); drawScore(); drawCompare(); drawMap(); updateBoat();
-  preloadViz();
+  if (!$('vizFrame').src.includes('/viz/')) preloadViz();
+  S.viz.replayId = info.stream_id;
+  S.viz.version = 0;
+  S.viz.sig = "";
+  S.viz.focusPending = false;
+  if (S.viz.ready) {
+    vizPost({ type: "reset", replayId: info.stream_id, version: 0 });
+    vizSendScenario();
+  }
 
   const a = $("feedAudio");
   a.src = `/api/audio/${recId}`;
@@ -204,10 +219,12 @@ async function tick(final) {
     return;
   }
   S.inflight = true;
+  const replayId = S.stream.stream_id;
   try {
-    const r = await api(`/api/stream/${S.stream.stream_id}/advance`, {
+    const r = await api(`/api/stream/${replayId}/advance`, {
       method: "POST", body: JSON.stringify({ t, sensitivity: S.sens, persistence: S.pers, method: S.method }),
     });
+    if (S.stream?.stream_id !== replayId) return;
     S.lastT = Math.max(S.lastT, Math.min(t, S.stream.duration));
     S.thresholds = r.state.thresholds;
     S.events = r.state.events;
@@ -229,8 +246,8 @@ async function tick(final) {
     $("feedClock").textContent = fmtT(S.afterEnd ? S.simT : Math.min(t, S.stream.duration));
     if (S.afterEnd && !r.state.done) $("feedLine").textContent = `Recording ended at ${fmtT(S.stream.duration)}. The boat mission continues in the simulated harbour.`;
   } catch (e) {
-    banner(e.message, "error"); stopLoop();
-  } finally { S.inflight = false; }
+    if (S.stream?.stream_id === replayId) { banner(e.message, "error"); stopLoop(); }
+  } finally { if (S.stream?.stream_id === replayId) S.inflight = false; }
 }
 
 // ----------------------------------------------------------------- threat board
@@ -791,10 +808,13 @@ function updateBoat() {
 
 async function boatCmd(command, extra = {}) {
   if (!S.stream) return;
-  try { await api(`/api/stream/${S.stream.stream_id}/boat`, { method: "POST", body: JSON.stringify({ command, ...extra }) }); }
-  catch (e) { banner(e.message, "error"); }
+  const replayId = S.stream.stream_id;
+  try { await api(`/api/stream/${replayId}/boat`, { method: "POST", body: JSON.stringify({ command, ...extra }) }); }
+  catch (e) { banner(e.message, "error"); return; }
+  if (S.stream?.stream_id !== replayId) return;
   if (command === "verdict") loadInspections();
-  if (!S.timer) tick(false);  // apply immediately even if paused at the end
+  await vizSendScenario();
+  if (!S.inflight) tick(false);
 }
 $("dispatchBtn").addEventListener("click", () => boatCmd("dispatch"));
 $("cancelLaunch").addEventListener("click", () => boatCmd("cancel"));
@@ -807,7 +827,7 @@ async function sendPolicy() {
 }
 $("autoDispatch").addEventListener("change", sendPolicy);
 $("cancelSel").addEventListener("change", sendPolicy);
-$("showTruth").addEventListener("change", (e) => { S.showTruth = e.target.checked; drawMap(); });
+$("showTruth").addEventListener("change", (e) => { S.showTruth = e.target.checked; drawMap(); vizSendScenario(); });
 
 async function loadInspections() {
   let rows;
@@ -850,8 +870,8 @@ function updateLayoutMode(redraw = true) {
 // slightly ahead when analysis of six hydrophones is busy), so both halves show the same moment.
 function feedClock() {
   const a = $("feedAudio");
-  if (S.afterEnd) return { t: S.simT || S.virtT, playing: !!S.timer };
-  return { t: S.simT || a.currentTime, playing: !a.paused && !a.ended };
+  if (S.afterEnd) return { t: S.simT, playing: !!S.timer };
+  return { t: S.simT, playing: !a.paused && !a.ended };
 }
 
 function vizPost(msg) {
@@ -859,30 +879,44 @@ function vizPost(msg) {
   if (w) w.postMessage({ source: "harbour-watch", ...msg }, location.origin);
 }
 
+function vizSync() {
+  if (!S.viz.open || !S.viz.ready || !S.viz.replayId) return;
+  const c = feedClock();
+  vizPost({ type: "sync", replayId: S.viz.replayId, version: S.viz.version,
+    t: c.t, speed: +$("speedSel").value, playing: c.playing });
+}
+
 async function vizSendScenario() {
-  if (!S.viz.open || !S.viz.ready || !S.stream) return;
+  if (!S.viz.ready || !S.stream) return;
+  const replayId = S.stream.stream_id;
+  const version = ++S.viz.version;
   S.viz.lastSent = performance.now();
+  const showTruth = $("view-officer").hidden || S.showTruth;
   try {
-    const scenario = await api(`/api/stream/${S.stream.stream_id}/viz`);
+    const scenario = await api(`/api/stream/${replayId}/viz?show_truth=${showTruth}`);
+    if (S.stream?.stream_id !== replayId || S.viz.replayId !== replayId || version !== S.viz.version) return;
     const c = feedClock();
-    vizPost({ type: "scenario", scenario, t: c.t, speed: +$("speedSel").value, playing: c.playing });
+    vizPost({ type: "scenario", replayId, version, scenario, t: c.t, speed: +$("speedSel").value, playing: c.playing });
+    if (S.viz.focusPending) {
+      S.viz.focusPending = false;
+      vizPost({ type: "focus-alert", replayId, version });
+    }
   } catch (e) { /* the next tick retries */ }
 }
 
 function vizTick(state) {
   if (!S.viz.open || !S.viz.ready) return;
-  const c = feedClock();
-  vizPost({ type: "sync", t: c.t, speed: +$("speedSel").value, playing: c.playing });
+  vizSync();
   // resend the scenario when the incident changes, and every 1.5 s so planned routes stay current
   const b = state?.map?.boat;
-  const sig = JSON.stringify([(S.events[S.method] || []).map((e) => [e.id, e.status]), b?.state, b?.contact ? 1 : 0, b?.sortie?.verdict]);
+  const sig = JSON.stringify([(S.events[S.method] || []).map((e) => [e.id, e.status, e.location]),
+    b?.state, b?.target, b?.waypoints?.length, b?.contact, b?.sortie?.verdict]);
   if (sig !== S.viz.sig || performance.now() - S.viz.lastSent > 1500) { S.viz.sig = sig; vizSendScenario(); }
 }
 
 // Load the 3D scene in the background as soon as a replay starts, so opening it is instant.
 function preloadViz() {
-  if (!S.status?.viz_available || !S.stream?.array) return;
-  S.viz = { open: false, ready: false, lastSent: 0, sig: "" };
+  if (!S.status?.viz_available || $("vizFrame").src.includes("/viz/")) return;
   $("vizFrame").src = "/viz/?external=1";
 }
 
@@ -891,6 +925,7 @@ function openViz() {
   if (!$("vizFrame").src.includes("/viz/")) preloadViz();
   S.viz.open = true;
   S.viz.sig = "";
+  S.viz.focusPending = !!currentAlert();
   document.body.classList.add("split");
   $("vizPanel").hidden = false;
   if (S.viz.ready) vizSendScenario();
@@ -908,11 +943,14 @@ function closeViz() {
 }
 
 window.addEventListener("message", (event) => {
-  if (event.origin !== location.origin || event.data?.source !== "harbour-viz") return;
-  if (event.data.type === "ready") { S.viz.ready = true; if (S.viz.open) vizSendScenario(); }
+  if (event.source !== $("vizFrame").contentWindow || event.origin !== location.origin || event.data?.source !== "harbour-viz") return;
+  if (event.data.type === "ready") {
+    S.viz.ready = true;
+    if (S.viz.replayId) vizPost({ type: "reset", replayId: S.viz.replayId, version: 0 });
+    vizSendScenario();
+  }
 });
 $("vizBtn").addEventListener("click", () => (S.viz.open ? closeViz() : openViz()));
 $("vizClose").addEventListener("click", closeViz);
 // keep the 3D view in step while paused or seeking
-$("feedAudio").addEventListener("pause", () => vizTick(null));
-$("feedAudio").addEventListener("seeked", () => vizTick(null));
+$("feedAudio").addEventListener("seeked", () => vizSync());

@@ -89,7 +89,7 @@ function cardFor(selection: Selection, scenario: Scenario, t: number): Card | nu
         type: 'DRONE BOAT', title: 'Drone boat',
         rows: [
           ['Task', task?.text ?? 'Standing by'],
-          ['Distance to contact', horizontalDistance(displayPosition, contact)],
+          ['Distance to contact', contactVisible ? horizontalDistance(displayPosition, contact) : '—'],
           ['Speed', speed(scenario.droneBoat.path, t)],
           ['Scan', scanText],
         ],
