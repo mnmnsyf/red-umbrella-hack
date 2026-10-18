@@ -14,7 +14,7 @@ interface ContactRingsProps {
 }
 
 // Concentric rings that drift outward around a contact, like the red rings in the key art.
-export default function ContactRings({ position, t, resolvedTime, color, radius = 46, count = 3, period = 3 }: ContactRingsProps) {
+export default function ContactRings({ position, t, resolvedTime, color, radius = 70, count = 3, period = 3 }: ContactRingsProps) {
   const geometry = useMemo(() => new RingGeometry(0.94, 1, 96), []);
   const phase = (t / period) % 1;
   const fade = resolvedTime === undefined ? 1 : Math.max(0, Math.min(1, 1 - (t - resolvedTime) / 1.5));

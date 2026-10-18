@@ -1,9 +1,9 @@
-import { Html, Line } from '@react-three/drei';
+import { Line } from '@react-three/drei';
 import { DoubleSide } from 'three';
 import { positionAt } from '../lib/interp';
 import { usePlaybackStore } from '../store';
 import { COLORS, VEXAG } from '../theme';
-import type { ScenarioEvent, Vec3 } from '../types';
+import type { ScenarioEvent } from '../types';
 import { seabedDepthAt } from './Seabed';
 import BearingLine from './fx/BearingLine';
 import EstimateDisk from './fx/EstimateDisk';
@@ -25,26 +25,14 @@ export default function BearingLines() {
 
   let bearings: Extract<ScenarioEvent, { type: 'bearings' }> | undefined;
   let estimate: Extract<ScenarioEvent, { type: 'estimate' }> | undefined;
-  let label: Extract<ScenarioEvent, { type: 'label' }> | undefined;
-  let firstHear: Extract<ScenarioEvent, { type: 'hear' }> | undefined;
-  let revealTime = Infinity;
   for (const event of scenario.events) {
     if (event.t > t) continue;
-    if (event.type === 'hear' && (!firstHear || event.t < firstHear.t)) firstHear = event;
     if (event.type === 'bearings' && (!bearings || event.t > bearings.t)) bearings = event;
     if (event.type === 'estimate' && (!estimate || event.t > estimate.t)) estimate = event;
-    if (event.type === 'label' && (!label || event.t > label.t)) label = event;
-    if (event.type === 'reveal') revealTime = Math.min(revealTime, event.t);
   }
 
   const truePosition = bearings ? positionAt(scenario.intruder.path, bearings.t) : null;
   const bearingOpacity = bearings ? Math.min(1, (t - bearings.t) / 2) : 0;
-  const firstHydrophone = scenario.hydrophones.find((hydrophone) => hydrophone.id === firstHear?.hydrophone);
-  const labelPosition: Vec3 = t >= revealTime
-    ? positionAt(scenario.intruder.path, t)
-    : estimate?.pos ?? (firstHydrophone
-      ? [firstHydrophone.pos[0], seabedDepthAt(firstHydrophone.pos[0], firstHydrophone.pos[2]), firstHydrophone.pos[2]]
-      : positionAt(scenario.intruder.path, t));
 
   return (
     <>
@@ -87,13 +75,6 @@ export default function BearingLines() {
           shrinkTo={estimate.shrinkTo}
           shrinkDur={estimate.shrinkDur}
         />
-      )}
-      {label && (
-        <Html position={[labelPosition[0], labelPosition[1] * VEXAG + 24, labelPosition[2]]} center zIndexRange={[10, 0]}>
-          <div className="scene-label callout">
-            {label.text}
-          </div>
-        </Html>
       )}
     </>
   );

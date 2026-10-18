@@ -17,6 +17,7 @@ import Intruder from './scene/Intruder';
 import Hydrophones from './scene/Hydrophones';
 import BearingLines from './scene/BearingLines';
 import CameraDirector from './scene/CameraDirector';
+import SafeFrame from './scene/SafeFrame';
 import ProtectedZones from './scene/ProtectedZones';
 import ReachRings from './scene/ReachRings';
 import WaterAtmosphere from './scene/WaterAtmosphere';
@@ -139,6 +140,7 @@ export default function App() {
           <PostFX />
           <Clock />
           <CameraDirector />
+          <SafeFrame />
           <WaterAtmosphere tintRef={tintRef} />
         </Canvas>
       )}
