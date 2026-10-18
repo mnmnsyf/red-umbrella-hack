@@ -6,6 +6,7 @@ import { COLORS, VEXAG } from '../theme';
 import type { ScenarioEvent } from '../types';
 import { seabedDepthAt } from './Seabed';
 import Model, { MODEL_URLS } from './Model';
+import Pickable from './Pickable';
 
 const SCAN_RADIUS = 28;
 const RESULT_CHIPS = {
@@ -60,8 +61,12 @@ export default function DroneBoat() {
 
   return (
     <>
-      <group position={[x, y * VEXAG, z]} rotation-y={yaw}>
-        <Model url={MODEL_URLS.droneBoat} length={14} sink={0.3} />
+      <group position={[x, y * VEXAG, z]}>
+        <Pickable selection={{ kind: 'drone', id: 'drone' }} radius={28}>
+          <group rotation-y={yaw}>
+            <Model url={MODEL_URLS.droneBoat} length={14} sink={0.3} />
+          </group>
+        </Pickable>
       </group>
       {moving && (
         <Line

@@ -7,6 +7,7 @@ import Model, { MODEL_URLS } from './Model';
 import AlertMarker from './fx/AlertMarker';
 import ContactRings from './fx/ContactRings';
 import TrackTrail from './fx/TrackTrail';
+import Pickable from './Pickable';
 
 const TRAIL_SECONDS = 60;
 
@@ -40,7 +41,9 @@ export default function Intruder() {
       />
       <ContactRings position={[x, y, z]} t={t} resolvedTime={resolvedTime} color={reveal ? COLORS.automatic : COLORS.protectedZone} />
       {estimate && !reveal && <AlertMarker position={[x, y, z]} t={t} startTime={estimate.t} radius={30} height={90} />}
-      <group position={[x, y * VEXAG, z]} rotation-y={yaw}>
+      <group position={[x, y * VEXAG, z]}>
+        <Pickable selection={{ kind: 'contact', id: 'contact' }} radius={30}>
+        <group rotation-y={yaw}>
         {!reveal && (
           <mesh>
             <sphereGeometry args={[11, 16, 12]} />
@@ -60,6 +63,8 @@ export default function Intruder() {
             </div>
           </Html>
         )}
+        </group>
+        </Pickable>
       </group>
     </>
   );

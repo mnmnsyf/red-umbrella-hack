@@ -2,6 +2,7 @@ import { usePlaybackStore } from '../store';
 import { COLORS, VEXAG } from '../theme';
 import { seabedDepthAt } from './Seabed';
 import SonarPing from './fx/SonarPing';
+import Pickable from './Pickable';
 
 const PULSE_DURATION = 4;
 const PULSE_RADIUS = 450;
@@ -19,6 +20,7 @@ export default function Hydrophones() {
         const seabedY = seabedDepthAt(x, z) * VEXAG;
         return (
           <group key={hydrophone.id} position={[x, seabedY, z]}>
+            <Pickable selection={{ kind: 'hydrophone', id: hydrophone.id }} radius={30} ringY={2}>
             <mesh position={[0, 4, 0]}>
               <cylinderGeometry args={[3, 4, 8, 12]} />
               <meshStandardMaterial color={COLORS.acoustic} roughness={0.5} />
@@ -27,6 +29,7 @@ export default function Hydrophones() {
               <sphereGeometry args={[9, 16, 12]} />
               <meshBasicMaterial color={COLORS.acoustic} transparent opacity={0.18} depthWrite={false} />
             </mesh>
+            </Pickable>
           </group>
         );
       })}

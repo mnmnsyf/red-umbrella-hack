@@ -8,6 +8,7 @@ import HandoffBanner from './hud/HandoffBanner';
 import IncidentReport from './hud/IncidentReport';
 import Countdown from './hud/Countdown';
 import Masthead from './hud/Masthead';
+import InfoCard from './hud/InfoCard';
 import Environment from './scene/Environment';
 import PostFX from './scene/fx/PostFX';
 import SurfaceBoats from './scene/SurfaceBoats';
@@ -97,7 +98,9 @@ export default function App() {
       }
       if (event.repeat) return;
 
-      if (event.code === 'Space') {
+      if (event.code === 'Escape') {
+        store.backToDirector();
+      } else if (event.code === 'Space') {
         event.preventDefault();
         store.togglePlaying();
       } else if (event.code === 'KeyR') {
@@ -150,6 +153,7 @@ export default function App() {
           <Countdown />
           <ActionLog />
           <IncidentReport />
+          <InfoCard />
           {!isExternal() && <Controls />}
         </div>
       )}
