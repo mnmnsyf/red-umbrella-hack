@@ -131,6 +131,7 @@ export default function InfoCard() {
   const t = usePlaybackStore((state) => state.t);
   const freeCamera = usePlaybackStore((state) => state.freeCamera);
   const backToDirector = usePlaybackStore((state) => state.backToDirector);
+  const flyToAlertOverview = usePlaybackStore((state) => state.flyToAlertOverview);
   const card = selection && scenario ? cardFor(selection, scenario, t) : null;
 
   return (
@@ -147,6 +148,7 @@ export default function InfoCard() {
             ))}
           </dl>
           <span className="info-chip" style={{ color: card.color, borderColor: card.color }}>{card.status}</span>
+          <button type="button" className="info-overview" onClick={flyToAlertOverview}>View alert overview</button>
           <button type="button" className="info-back" onClick={backToDirector}>Back to director view</button>
         </section>
       )}

@@ -18,9 +18,10 @@ interface PlaybackStore {
   freeCamera: boolean;
   selection: Selection | null;
   hovered: Selection | null;
-  flyRequest: { target: Vec3; distance: number; follow: Selection | null; requestedAt: number } | null;
+  flyRequest: { target: Vec3; distance: number; follow: Selection | null; requestedAt: number; position?: Vec3 } | null;
   select: (selection: Selection) => void;
   flyToPoint: (point: Vec3) => void;
+  flyToAlertOverview: () => void;
   setHovered: (selection: Selection | null) => void;
   backToDirector: () => void;
   loadScenario: (scenario: Scenario) => void;
@@ -71,6 +72,27 @@ export const usePlaybackStore = create<PlaybackStore>((set, get) => ({
       requestedAt: Math.max(performance.now(), (state.flyRequest?.requestedAt ?? 0) + 0.001),
     },
   })),
+  flyToAlertOverview: () => set((state) => {
+    const scenario = state.scenario;
+    if (!scenario?.camera.length) return state;
+    const shot = scenario.camera[0];
+    return {
+      selection: null,
+      hovered: null,
+      freeCamera: true,
+      flyRequest: {
+        target: [...shot.target],
+        position: [...shot.pos],
+        distance: Math.hypot(
+          shot.pos[0] - shot.target[0],
+          shot.pos[1] - shot.target[1],
+          shot.pos[2] - shot.target[2],
+        ),
+        follow: null,
+        requestedAt: Math.max(performance.now(), (state.flyRequest?.requestedAt ?? 0) + 0.001),
+      },
+    };
+  }),
   setHovered: (hovered) => set({ hovered }),
   backToDirector: () => set(directorView),
 

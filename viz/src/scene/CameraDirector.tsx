@@ -88,7 +88,7 @@ export default function CameraDirector() {
       const fromTarget = orbit.target.toArray() as Vec3;
       const direction = orbit.target.clone().sub(camera.position).normalize();
       const target = request.target;
-      const toPosition: Vec3 = [
+      const toPosition: Vec3 = request.position ?? [
         target[0] - direction.x * request.distance,
         Math.max(target[1] - direction.y * request.distance, target[1] + request.distance * 0.35),
         target[2] - direction.z * request.distance,

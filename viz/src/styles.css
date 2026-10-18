@@ -913,6 +913,7 @@ body,
 }
 
 .info-back,
+.info-overview,
 .free-camera-back {
   border: 1px solid var(--color-ink);
   border-radius: 7px;
@@ -923,7 +924,14 @@ body,
   pointer-events: auto;
 }
 
-.info-back { margin-top: 8px; padding: 9px; }
+.info-back,
+.info-overview { padding: 9px; }
+
+.info-overview {
+  margin-top: 8px;
+  background: var(--color-ink);
+  color: #fff;
+}
 
 .free-camera-back {
   left: 24px;
