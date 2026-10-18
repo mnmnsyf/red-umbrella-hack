@@ -1,5 +1,5 @@
 {
-  "title": "Angels Gate · Port of Los Angeles",
+  "title": "Terminal Island · Port of Los Angeles",
   "duration": 335,
   "vMax": 2.5,
   "tHuman": 30,
@@ -12,46 +12,49 @@
     { "id": 6, "name": "Reveal",       "start": 275, "end": 335, "rate": 1 }
   ],
   "hydrophones": [
-    { "id": "H1", "pos": [-600, -35, 400] },
-    { "id": "H2", "pos": [500, -30, -500] },
-    { "id": "H3", "pos": [-100, -38, -700] }
+    { "id": "H1", "pos": [-936, -16, -74] },
+    { "id": "H2", "pos": [-552, -16, -266] },
+    { "id": "H3", "pos": [-127, -16, -415] },
+    { "id": "H4", "pos": [278, -16, -532] },
+    { "id": "H5", "pos": [-659, -16, 373] },
+    { "id": "H6", "pos": [44, -16, 202] }
   ],
   "zones": [
-    { "name": "Outer harbor berth", "min": [-450, 200], "max": [-150, 400] }
+    { "name": "Container berths", "min": [-420, -560], "max": [-60, -380] }
   ],
-  "fish": { "center": [500, -25, 300], "radiusXZ": 120, "radiusY": 8, "count": 800, "label": "Spawning aggregation · protected" },
+  "fish": { "center": [800, -25, 300], "radiusXZ": 120, "radiusY": 8, "count": 800, "label": "Spawning aggregation · protected" },
   "intruder": {
     "visibleFrom": 42,
     "path": [
-      { "t": 0,   "pos": [300, -14, -500] },
-      { "t": 75,  "pos": [150, -13, -300] },
-      { "t": 255, "pos": [-50, -12, -50] },
-      { "t": 335, "pos": [-70, -12, -70] }
+      { "t": 0,   "pos": [1150, -14, 20] },
+      { "t": 75,  "pos": [650, -13, -150] },
+      { "t": 255, "pos": [150, -12, -330] },
+      { "t": 335, "pos": [130, -12, -340] }
     ]
   },
   "droneBoat": {
     "path": [
-      { "t": 0,   "pos": [-800, 0, -200] },
-      { "t": 80,  "pos": [-800, 0, -200] },
-      { "t": 235, "pos": [-90, 0, -80] },
-      { "t": 255, "pos": [-90, 0, -80] },
-      { "t": 285, "pos": [-60, 0, -60] },
-      { "t": 335, "pos": [-60, 0, -60] }
+      { "t": 0,   "pos": [-254, 0, 500] },
+      { "t": 80,  "pos": [-254, 0, 500] },
+      { "t": 235, "pos": [170, 0, -265] },
+      { "t": 255, "pos": [170, 0, -265] },
+      { "t": 285, "pos": [140, 0, -322] },
+      { "t": 335, "pos": [140, 0, -322] }
     ]
   },
   "surfaceBoats": [
-    { "id": "ferry-1", "path": [ { "t": 0, "pos": [900, 0, 300] }, { "t": 335, "pos": [-300, 0, 300] } ] },
-    { "id": "ferry-2", "path": [ { "t": 0, "pos": [-300, 0, 250] }, { "t": 335, "pos": [900, 0, 250] } ] }
+    { "id": "ferry-1", "path": [ { "t": 0, "pos": [1150, 0, 0] }, { "t": 335, "pos": [-500, 0, -150] } ] },
+    { "id": "ferry-2", "path": [ { "t": 0, "pos": [-700, 0, 150] }, { "t": 335, "pos": [1100, 0, 200] } ] }
   ],
   "events": [
     { "t": 42,   "type": "phase", "phase": "DETECT" },
-    { "t": 42.0, "type": "hear", "hydrophone": "H2" },
-    { "t": 42.4, "type": "hear", "hydrophone": "H3" },
-    { "t": 42.7, "type": "hear", "hydrophone": "H1" },
+    { "t": 42.0, "type": "hear", "hydrophone": "H4" },
+    { "t": 42.4, "type": "hear", "hydrophone": "H6" },
+    { "t": 42.7, "type": "hear", "hydrophone": "H3" },
     { "t": 46,   "type": "label", "text": "Unusual acoustic event · score 12.2" },
     { "t": 50,   "type": "phase", "phase": "LOCATE" },
     { "t": 50,   "type": "bearings", "noiseDeg": 3 },
-    { "t": 58,   "type": "estimate", "pos": [180, -13, -340], "radius": 90, "shrinkTo": 30, "shrinkDur": 15 },
+    { "t": 58,   "type": "estimate", "pos": [740, -13, -90], "radius": 90, "shrinkTo": 30, "shrinkDur": 15 },
     { "t": 75,   "type": "phase", "phase": "INSPECT" },
     { "t": 75,   "type": "action", "text": "Dispatch drone boat to observe", "mode": "auto" },
     { "t": 235,  "type": "action", "text": "Hold 50 m stand-off", "mode": "auto" },
@@ -68,13 +71,13 @@
   ],
   "camera": [
     {"t":  0, "pos": [1674, 1813, 1996], "target": [0, -80, 0], "dur": 0},
-    {"t":  42, "pos": [888, 1451, 1011], "target": [40, -80, -200], "dur": 4},
-    {"t":  50, "pos": [598, 1095, 476], "target": [150, -52, -300], "dur": 3},
-    {"t":  75, "pos": [385, 1215, 908], "target": [-160, -30, -260], "dur": 4},
-    {"t":  235, "pos": [79, 68, 139], "target": [-60, -40, -60], "dur": 3},
-    {"t":  255, "pos": [207, 719, 644], "target": [-130, -30, 60], "dur": 3},
-    {"t":  280, "pos": [-120, -45, 70], "target": [-60, -48, -60], "dur": 4},
-    {"t":  287, "pos": [-100, -20, 0], "target": [-60, -48, -60], "dur": 3},
+    {"t":  42, "pos": [1698, 1451, 1151], "target": [850, -80, -60], "dur": 4},
+    {"t":  50, "pos": [1208, 1095, 666], "target": [760, -52, -110], "dur": 3},
+    {"t":  75, "pos": [745, 1215, 1338], "target": [200, -30, 170], "dur": 4},
+    {"t":  235, "pos": [329, 68, -91], "target": [190, -40, -290], "dur": 3},
+    {"t":  255, "pos": [437, 719, 384], "target": [100, -30, -200], "dur": 3},
+    {"t":  280, "pos": [82, -45, -204], "target": [142, -48, -334], "dur": 4},
+    {"t":  287, "pos": [102, -20, -274], "target": [142, -48, -334], "dur": 3},
     {"t":  315, "pos": [1674, 1813, 1996], "target": [0, -80, 0], "dur": 5}
   ]
 }

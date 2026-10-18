@@ -2,15 +2,15 @@ import { useMemo } from 'react';
 import { useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { Color, DoubleSide, PlaneGeometry, ShaderMaterial, SRGBColorSpace, Vector3, Vector4 } from 'three';
-import { ANGELS_GATE_MAP } from '../location';
+import { HARBOUR_MAP } from '../location';
 import { COLORS, HORIZON, SCENE_SIZE, WORLD_SIZE } from '../theme';
 
-// Glassy harbour surface with the real Angels Gate coastline: pale blue water, white fresnel sheen, sun glints and pale land.
+// Glassy harbour surface with the real Terminal Island basin coastline: pale blue water, white fresnel sheen, sun glints and pale land.
 export default function WaterSurface() {
-  const map = useTexture(ANGELS_GATE_MAP.image);
-  const contextMap = useTexture(ANGELS_GATE_MAP.contextImage);
-  const landMask = useTexture(ANGELS_GATE_MAP.land);
-  const contextLandMask = useTexture(ANGELS_GATE_MAP.contextLand);
+  const map = useTexture(HARBOUR_MAP.image);
+  const contextMap = useTexture(HARBOUR_MAP.contextImage);
+  const landMask = useTexture(HARBOUR_MAP.land);
+  const contextLandMask = useTexture(HARBOUR_MAP.contextLand);
   map.colorSpace = SRGBColorSpace;
   contextMap.colorSpace = SRGBColorSpace;
   const geometry = useMemo(() => new PlaneGeometry(WORLD_SIZE, WORLD_SIZE, 1, 1), []);
@@ -70,8 +70,9 @@ export default function WaterSurface() {
         color = mix(color, vec3(1.0), fresnel * 0.45);
         bool underwater = cameraPosition.y < 0.0;
         // The imagery only supplies the coastline; water keeps the glassy look and land is drawn as pale relief.
-        vec2 uv = vec2(0.5 - p.x / ${SCENE_SIZE.toFixed(1)}, 0.5 + p.y / ${SCENE_SIZE.toFixed(1)});
-        vec2 contextUv = vec2(0.5 - p.x / ${ANGELS_GATE_MAP.contextSize.toFixed(1)}, 0.5 + p.y / ${ANGELS_GATE_MAP.contextSize.toFixed(1)});
+        // +x is east and +z is south, so north (image top) is -z.
+        vec2 uv = vec2(0.5 + p.x / ${SCENE_SIZE.toFixed(1)}, 0.5 - p.y / ${SCENE_SIZE.toFixed(1)});
+        vec2 contextUv = vec2(0.5 + p.x / ${HARBOUR_MAP.contextSize.toFixed(1)}, 0.5 - p.y / ${HARBOUR_MAP.contextSize.toFixed(1)});
         float contextEdge = min(min(contextUv.x, 1.0 - contextUv.x), min(contextUv.y, 1.0 - contextUv.y));
         float contextCoverage = smoothstep(0.0, 0.015, contextEdge);
         float mapEdge = min(min(uv.x, 1.0 - uv.x), min(uv.y, 1.0 - uv.y));

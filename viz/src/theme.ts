@@ -1,5 +1,5 @@
 export const VEXAG = 4;
-export const SCENE_SIZE = 2400;
+export const SCENE_SIZE = 2800;  // must match tools/fetch_harbour_map.py; covers the 2.5 km patrol basin
 // Seabed and water run on past the harbour and dissolve into the backdrop, so the scene has no visible edge.
 export const WORLD_SIZE = SCENE_SIZE * 4;
 export const HORIZON = { color: '#e1e7eb', near: 3600, far: 9500, fadeStart: 2600, fadeEnd: 5600 };
